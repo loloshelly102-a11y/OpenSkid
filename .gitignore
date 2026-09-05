@@ -39,3 +39,6 @@ Thumbs.db
 
 # NOTE: release jars live under build/ (ignored above).
 # Publish one with: git add -f build/libs/<jar>
+
+# Local-only planning docs
+SETUP_WIZARD_PLAN.md
