@@ -18,6 +18,8 @@ Forge 1.8.9 ghost client. 201 modules, 6 ClickGUI styles, hover tooltips on ever
 - Cape picker with 49 bundled capes plus custom PNGs from the `keystrokes/customCapes` folder.
 - Online configs and a script loader (see below).
 
+See [CHANGELOG.md](CHANGELOG.md) for what changed in each release.
+
 ## Building
 
 Requires JDK 17 to run Gradle (the mod itself targets Java 8):
