@@ -1,0 +1,21 @@
+[
+  {
+    "name": "OpenSkid",
+    "version": "${version}",
+    "mcversion": "1.8.9",
+    "authorList": [
+      "nespola001"
+    ]
+  },
+  {
+    "modid": "rsl",
+    "name": "OpenSkidScriptLoader",
+    "description": "OpenSkid script loader.",
+    "version": "1.0.3",
+    "mcversion": "1.8.9",
+    "url": "https://codeberg.org/monster-energy/raven-script-loader",
+    "authorList": [
+      "@maya.gay"
+    ]
+  }
+]

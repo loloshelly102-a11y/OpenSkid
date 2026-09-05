@@ -1,0 +1,41 @@
+# IDE
+.classpath
+.settings
+.project
+bin/
+.idea/
+.vscode/
+*.iml
+openskid_client.launch
+
+# Compiled / packaged
+*.class
+*.war
+*.nar
+*.ear
+*.rar
+
+# Gradle / build outputs
+build/
+.gradle/
+out/
+
+# Minecraft run dirs and user data (third-party shared configs, local game files)
+run/
+configs/
+
+# Logs and crash dumps
+*.log
+hs_err_pid*
+replay_pid*
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# BlueJ / misc
+*.ctxt
+.mtj.tmp/
+
+# NOTE: release jars live under build/ (ignored above).
+# Publish one with: git add -f build/libs/<jar>
