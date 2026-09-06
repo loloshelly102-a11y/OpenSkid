@@ -19,9 +19,15 @@ public final class SetupEntry {
     public final String url;
     public final long expectedBytes;
     public final boolean auto;
+    public final boolean matchPrefix;
 
     public SetupEntry(Section section, Source source, String name, String blurb,
                       String fileName, String url, long expectedBytes, boolean auto) {
+        this(section, source, name, blurb, fileName, url, expectedBytes, auto, false);
+    }
+
+    public SetupEntry(Section section, Source source, String name, String blurb,
+                      String fileName, String url, long expectedBytes, boolean auto, boolean matchPrefix) {
         this.section = section;
         this.source = source;
         this.name = name;
@@ -30,6 +36,7 @@ public final class SetupEntry {
         this.url = url;
         this.expectedBytes = expectedBytes;
         this.auto = auto;
+        this.matchPrefix = matchPrefix;
     }
 
     public static String stripColors(String text) {

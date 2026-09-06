@@ -51,6 +51,9 @@ public final class SetupScanner {
                 if (name.equals(want)) {
                     return true;
                 }
+                if (entry.matchPrefix && isPrefixMatch(name, want)) {
+                    return true;
+                }
                 if (isNumberedDuplicate(name, want)) {
                     return true;
                 }
@@ -63,8 +66,21 @@ public final class SetupScanner {
         return false;
     }
 
-    private static boolean isNumberedDuplicate(String name, String want) {
-        if (!want.endsWith(".jar") || !name.endsWith(".jar")) {
+    private static boolean isPrefixMatch(String name, String want) {
+        if (!name.endsWith(".jar")) {
+            return false;
+        }
+        String core = want.toLowerCase(Locale.ROOT);
+        if (core.startsWith("preview_")) {
+            core = core.substring("preview_".length());
+        }
+        int underscore = core.lastIndexOf("_HD_U_");
+        String prefix = underscore > 0 ? core.substring(0, underscore) : core;
+        String plain = name.startsWith("preview_") ? name.substring("preview_".length()) : name;
+        return plain.startsWith(prefix);
+    }
+
+    private static boolean isNumberedDuplicate(String name, String want) {        if (!want.endsWith(".jar") || !name.endsWith(".jar")) {
             return false;
         }
         String base = want.substring(0, want.length() - 4);

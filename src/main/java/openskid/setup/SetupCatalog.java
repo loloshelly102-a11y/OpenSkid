@@ -11,6 +11,10 @@ public final class SetupCatalog {
     public static List<SetupEntry> mods() {
         List<SetupEntry> out = new ArrayList<>();
         out.add(new SetupEntry(SetupEntry.Section.MODS, SetupEntry.Source.DIRECT,
+                "OptiFine", "Performance plus zoom. Installs silently.",
+                "preview_OptiFine_1.8.9_HD_U_M6_pre2.jar",
+                "https://raw.githubusercontent.com/loloshelly102-a11y/OpenSkid/main/configs/preview_OptiFine_1.8.9_HD_U_M6_pre2.jar",
+                0, true, true));        out.add(new SetupEntry(SetupEntry.Section.MODS, SetupEntry.Source.DIRECT,
                 "3DSkinLayers", "3D skin layers on players.",
                 "3dSkinLayers-forge-mc1.8.9-1.2.0.jar",
                 "https://cdn.modrinth.com/data/zV5r3pPn/versions/1.2.0-forge-1.8.9/3dSkinLayers-forge-mc1.8.9-1.2.0.jar?mr_download_reason=standalone&mr_game_version=1.8.9&mr_loader=forge",
