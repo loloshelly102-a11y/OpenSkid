@@ -350,7 +350,9 @@ public class OpenSkid {
         ViaMCP.create();
 
         try {
-            openskid.setup.OneConfigPatcher.run(net.minecraft.client.Minecraft.getMinecraft().mcDataDir);
+            java.io.File gameDir = net.minecraft.client.Minecraft.getMinecraft().mcDataDir;
+            openskid.setup.OneConfigPatcher.run(gameDir);
+            openskid.setup.OneConfigPatcher.watch(gameDir);
         } catch (Exception ignored) {
         }
 

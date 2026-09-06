@@ -9,6 +9,10 @@ public final class SetupHook {
 
     public static void onMainMenu(OpenSkidMainMenu menu) {
         try {
+            Minecraft mc = Minecraft.getMinecraft();
+            if (mc != null && mc.mcDataDir != null) {
+                OneConfigPatcher.run(mc.mcDataDir, false);
+            }
             if (!SetupState.isDone()) {
                 SetupScreen screen = new SetupScreen();
                 screen.setReturnToMenu(true);

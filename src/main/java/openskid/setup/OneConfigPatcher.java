@@ -26,21 +26,123 @@ public final class OneConfigPatcher {
     private OneConfigPatcher() {
     }
 
+    private static boolean listenerRegistered;
+    private static File watchedGameDir;
+
+    public static void watch(File gameDir) {
+        try {
+            if (listenerRegistered || gameDir == null) {
+                return;
+            }
+            watchedGameDir = gameDir;
+            openskid.event.EventManager.register(new JoinWatcher());
+            listenerRegistered = true;
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static final class JoinWatcher {
+        @openskid.event.EventTarget
+        public void onWorld(openskid.events.LoadWorldEvent event) {
+            try {
+                if (watchedGameDir != null) {
+                    run(watchedGameDir, false);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
     public static void run(File gameDir) {
+        run(gameDir, true);
+    }
+
+    public static void run(File gameDir, boolean count) {
         try {
             if (gameDir == null || !isOneConfigPresent(gameDir)) {
                 return;
             }
             File counter = new File(gameDir, "config/OpenSkid/oneconfig_patch_count");
-            int count = readCount(counter);
-            if (count >= MAX_PATCHES) {
+            int launches = readCount(counter);
+            if (launches >= MAX_PATCHES) {
                 return;
             }
+            boolean touched = patchMemory();
             File prefs = new File(gameDir, "OneConfig/Preferences.json");
-            if (patch(prefs)) {
-                writeCount(counter, count + 1);
+            touched = patch(prefs) || touched;
+            if (touched && count) {
+                writeCount(counter, launches + 1);
             }
         } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Updates OneConfig's loaded key object in place. The file patch alone
+     * loses because OneConfig keeps RightShift in memory and saves it back
+     * over our file later (for example on world join). Mutating the same
+     * object its keybind registration holds fixes it at the root.
+     */
+    private static boolean patchMemory() {
+        try {
+            Class<?> prefsClass = Class.forName("cc.polyfrost.oneconfig.internal.config.Preferences");
+            java.lang.reflect.Field bindField = prefsClass.getDeclaredField("oneConfigKeyBind");
+            bindField.setAccessible(true);
+            Object bind = bindField.get(null);
+            if (bind == null) {
+                return false;
+            }
+            Class<?> cursor = bind.getClass();
+            java.lang.reflect.Field keysField = null;
+            while (cursor != null) {
+                try {
+                    keysField = cursor.getDeclaredField("keyBinds");
+                    break;
+                } catch (NoSuchFieldException e) {
+                    cursor = cursor.getSuperclass();
+                }
+            }
+            if (keysField == null) {
+                return false;
+            }
+            keysField.setAccessible(true);
+            Object raw = keysField.get(bind);
+            if (!(raw instanceof java.util.List)) {
+                return false;
+            }
+            java.util.List<?> keys = (java.util.List<?>) raw;
+            if (keys.size() == 1 && Integer.valueOf(KEY_O).equals(keys.get(0))) {
+                return true;
+            }
+            @SuppressWarnings("unchecked")
+            java.util.List<Integer> mutable = (java.util.List<Integer>) keys;
+            mutable.clear();
+            mutable.add(KEY_O);
+            try {
+                java.lang.reflect.Method getInstance = prefsClass.getDeclaredMethod("getInstance");
+                getInstance.setAccessible(true);
+                Object instance = getInstance.invoke(null);
+                if (instance != null) {
+                    java.lang.reflect.Method save = null;
+                    Class<?> saveCursor = instance.getClass();
+                    while (saveCursor != null) {
+                        try {
+                            save = saveCursor.getDeclaredMethod("save");
+                            break;
+                        } catch (NoSuchMethodException e) {
+                            saveCursor = saveCursor.getSuperclass();
+                        }
+                    }
+                    if (save != null) {
+                        save.setAccessible(true);
+                        save.invoke(instance);
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+            return true;
+        } catch (Throwable ignored) {
+            return false;
         }
     }
 
