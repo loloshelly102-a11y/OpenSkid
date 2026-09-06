@@ -55,7 +55,7 @@ public final class SetupCatalog {
                 "https://www.mediafire.com/file/fjbu486iuaaczcs/%2521_Fosyx_Sound_Pack.zip/file",
                 0, false));
         out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
-                "Urge Revamp", "PvP sound pack.",
+                "Urge Revamp", "PvP texture pack.",
                 "!    \u00A74Urge Revamp.zip",
                 "https://www.mediafire.com/file/l0lm240xobgx18e/!++++%C2%A74Urge+Revamp.zip/file",
                 0, false));
