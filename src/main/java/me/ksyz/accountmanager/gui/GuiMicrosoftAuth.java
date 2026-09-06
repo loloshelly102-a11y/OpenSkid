@@ -9,6 +9,8 @@ import me.ksyz.accountmanager.utils.SystemUtils;
 import me.ksyz.accountmanager.utils.TextFormatting;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
+import openskid.ui.impl.gui.BackgroundRenderer;
+import openskid.ui.impl.gui.ModernGuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.lwjgl.input.Keyboard;
@@ -46,7 +48,7 @@ public class GuiMicrosoftAuth extends GuiScreen {
     @Override
     public void initGui() {
         buttonList.clear();
-        buttonList.add(openButton = new GuiButton(
+        buttonList.add(openButton = new ModernGuiButton(
                 0,
                 width / 2 - 75 - 2,
                 height / 2 + fontRendererObj.FONT_HEIGHT / 2 + fontRendererObj.FONT_HEIGHT,
@@ -54,7 +56,7 @@ public class GuiMicrosoftAuth extends GuiScreen {
                 20,
                 "Open"
         ));
-        buttonList.add(cancelButton = new GuiButton(
+        buttonList.add(cancelButton = new ModernGuiButton(
                 1,
                 width / 2 + 2,
                 height / 2 + fontRendererObj.FONT_HEIGHT / 2 + fontRendererObj.FONT_HEIGHT,
@@ -156,7 +158,12 @@ public class GuiMicrosoftAuth extends GuiScreen {
         if (openButton != null) {
             openButton.enabled = openButtonEnabled;
         }
-        drawDefaultBackground();
+        try {
+            BackgroundRenderer.draw(width, height);
+        } catch (Exception e) {
+            drawDefaultBackground();
+        }
+        drawRect(0, 0, width, height, 0x99000000);
         super.drawScreen(mouseX, mouseY, partialTicks);
 
         drawCenteredString(

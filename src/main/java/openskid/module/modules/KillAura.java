@@ -254,7 +254,9 @@ public class KillAura extends Module {
                 }
                 return clickPattern[patternIndex];
             } else {
-                return 1000L / RandomUtil.nextLong(this.minCPS.getValue(), this.maxCPS.getValue());
+                long min = Math.min(this.minCPS.getValue(), this.maxCPS.getValue());
+                long max = Math.max(this.minCPS.getValue(), this.maxCPS.getValue());
+                return 1000L / RandomUtil.nextLong(min, max);
             }
         }
     }

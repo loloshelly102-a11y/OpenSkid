@@ -223,6 +223,7 @@ public class ClickGuiScreen extends GuiScreen {
                 OpenSkid.moduleManager.getModule(MouseRawInput.class),
                 OpenSkid.moduleManager.getModule(BedwarUtils.class),
                 OpenSkid.moduleManager.getModule(AutoAuth.class),
+                OpenSkid.moduleManager.getModule(Hotbar.class),
                 OpenSkid.moduleManager.getModule(AutoHypixel.class),
                 OpenSkid.moduleManager.getModule(AutoPlay.class),
                 OpenSkid.moduleManager.getModule(AutoGG.class),

@@ -221,6 +221,10 @@ public class CardClickGUI extends GuiScreen {
         Keyboard.enableRepeatEvents(false);
         dragging = false;
         Module gui = OpenSkid.moduleManager.getModule("ClickGUI");
+        if (gui instanceof openskid.module.modules.ClickGUIModule
+                && ((openskid.module.modules.ClickGUIModule) gui).isSwitchingGuiStyle()) {
+            return;
+        }
         if (gui != null) gui.setEnabled(false);
     }
 

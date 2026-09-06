@@ -9,6 +9,8 @@ import me.ksyz.accountmanager.utils.Notification;
 import me.ksyz.accountmanager.utils.TextFormatting;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
+import openskid.ui.impl.gui.BackgroundRenderer;
+import openskid.ui.impl.gui.ModernGuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import org.lwjgl.input.Keyboard;
 
@@ -59,7 +61,7 @@ public class GuiCookieLogin extends GuiScreen {
         if (executor == null) {
             executor = Executors.newSingleThreadExecutor();
         }
-        buttonList.add(chooseButton = new GuiButton(
+        buttonList.add(chooseButton = new ModernGuiButton(
                 998, width / 2 - 100, height / 2, 200, 20, "Choose Cookie File..."
         ));
     }
@@ -98,7 +100,12 @@ public class GuiCookieLogin extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawDefaultBackground();
+        try {
+            BackgroundRenderer.draw(width, height);
+        } catch (Exception e) {
+            drawDefaultBackground();
+        }
+        drawRect(0, 0, width, height, 0x99000000);
         super.drawScreen(mouseX, mouseY, partialTicks);
 
         drawCenteredString(

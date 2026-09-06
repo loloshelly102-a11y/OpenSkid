@@ -333,7 +333,14 @@ public class OpenSkid {
         FontManager.initializeFonts();
         ClickGuiScreen.getInstance();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(config::save));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                String name = Config.lastConfig != null ? Config.lastConfig : "default";
+                new Config(name, false).save();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }));
 
         me.ksyz.accountmanager.AccountManager.init();
         ViaMCP.create();

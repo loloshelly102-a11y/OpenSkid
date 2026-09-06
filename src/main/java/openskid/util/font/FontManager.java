@@ -70,21 +70,21 @@ public class FontManager {
             googleSans24 = new FontRenderer(FontUtil.getResource(locationMap, "Google-Sans.ttf", 24));
 
             // Pulse Fonts
-            pulse12 = new FontRenderer(FontUtil.getResource(locationMap, "pulse.ttf", 12));
-            pulse16 = new FontRenderer(FontUtil.getResource(locationMap, "pulse.ttf", 16));
-            pulse20 = new FontRenderer(FontUtil.getResource(locationMap, "pulse.ttf", 20));
-            pulse24 = new FontRenderer(FontUtil.getResource(locationMap, "pulse.ttf", 24));
-            pulse28 = new FontRenderer(FontUtil.getResource(locationMap, "pulse.ttf", 28));
-            pulse32 = new FontRenderer(FontUtil.getResource(locationMap, "pulse.ttf", 32));
-            pulse80 = new FontRenderer(FontUtil.getResource(locationMap, "pulse.ttf", 80));
+            pulse12 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity.ttf", 12));
+            pulse16 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity.ttf", 16));
+            pulse20 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity.ttf", 20));
+            pulse24 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity.ttf", 24));
+            pulse28 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity.ttf", 28));
+            pulse32 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity.ttf", 32));
+            pulse80 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity.ttf", 80));
 
             // Pulse Bold Fonts
-            pulseBold12 = new FontRenderer(FontUtil.getResource(locationMap, "pulse-bold.ttf", 12));
-            pulseBold16 = new FontRenderer(FontUtil.getResource(locationMap, "pulse-bold.ttf", 16));
-            pulseBold20 = new FontRenderer(FontUtil.getResource(locationMap, "pulse-bold.ttf", 20));
-            pulseBold24 = new FontRenderer(FontUtil.getResource(locationMap, "pulse-bold.ttf", 24));
-            pulseBold28 = new FontRenderer(FontUtil.getResource(locationMap, "pulse-bold.ttf", 28));
-            pulseBold32 = new FontRenderer(FontUtil.getResource(locationMap, "pulse-bold.ttf", 32));
+            pulseBold12 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity-bold.ttf", 12));
+            pulseBold16 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity-bold.ttf", 16));
+            pulseBold20 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity-bold.ttf", 20));
+            pulseBold24 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity-bold.ttf", 24));
+            pulseBold28 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity-bold.ttf", 28));
+            pulseBold32 = new FontRenderer(FontUtil.getResource(locationMap, "tenacity-bold.ttf", 32));
 
             // San Francisco Pro
             sfPro12 = new FontRenderer(FontUtil.getResource(locationMap, "San-Francisco-Pro-Fonts.ttf", 12));

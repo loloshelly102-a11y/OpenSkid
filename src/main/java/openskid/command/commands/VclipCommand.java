@@ -26,10 +26,14 @@ public class VclipCommand extends Command {
             try {
                 distance = Double.parseDouble(args.get(1));
             } catch (NumberFormatException e) {
-            } finally {
-                mc.thePlayer.setPositionAndUpdate(mc.thePlayer.posX, mc.thePlayer.posY + distance, mc.thePlayer.posZ);
-                ChatUtil.sendFormatted(String.format("%sClipped (%s blocks)", OpenSkid.clientName, df.format(distance)));
+                ChatUtil.sendFormatted(String.format("%sNot a number (&o%s&r)&r", OpenSkid.clientName, args.get(1)));
+                return;
             }
+            if (mc.thePlayer == null || mc.theWorld == null) {
+                return;
+            }
+            mc.thePlayer.setPositionAndUpdate(mc.thePlayer.posX, mc.thePlayer.posY + distance, mc.thePlayer.posZ);
+            ChatUtil.sendFormatted(String.format("%sClipped (%s blocks)", OpenSkid.clientName, df.format(distance)));
             return;
         }
         ChatUtil.sendFormatted(

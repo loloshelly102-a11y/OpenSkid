@@ -6,10 +6,10 @@ import openskid.event.types.Priority;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -20,7 +20,7 @@ public final class EventManager {
     /**
      * HashMap containing all the registered MethodData sorted on the event parameters of the methods.
      */
-    private static final HashMap<Class<? extends Event>, List<MethodData>> REGISTRY_MAP = new HashMap<>();
+    private static final Map<Class<? extends Event>, List<MethodData>> REGISTRY_MAP = new ConcurrentHashMap<>();
 
     /**
      * All methods in this class are static so there would be no reason to create an object of the EventManager class.
@@ -63,11 +63,7 @@ public final class EventManager {
      */
     public static void unregister(Object object) {
         for (final List<MethodData> dataList : REGISTRY_MAP.values()) {
-            for (final MethodData data : dataList) {
-                if (data.getSource().equals(object)) {
-                    dataList.remove(data);
-                }
-            }
+            dataList.removeIf(data -> data.getSource().equals(object));
         }
         cleanMap(true);
     }

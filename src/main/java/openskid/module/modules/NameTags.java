@@ -551,12 +551,12 @@ public class NameTags extends Module {
     private UFontRenderer getRavenFontRenderer() {
         if (ravenFontRenderer == null) {
             try {
-                ravenFontRenderer = new UFontRenderer("Arial", 16);
+                ravenFontRenderer = new UFontRenderer("arial", 16);
             } catch (Exception e) {
                 System.err.println("[NameTags] Failed to create raven font renderer: " + e.getMessage());
                 // Fallback: try with default font
                 try {
-                    ravenFontRenderer = new UFontRenderer("serif", 16);
+                    ravenFontRenderer = new UFontRenderer("sans", 16);
                 } catch (Exception e2) {
                     System.err.println("[NameTags] Failed to create fallback font renderer: " + e2.getMessage());
                 }

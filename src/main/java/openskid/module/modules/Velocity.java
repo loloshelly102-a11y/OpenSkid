@@ -241,6 +241,7 @@ public class Velocity extends Module {
                         }
                     }
                     this.ticksSinceVelocity = 0;
+                    this.ShouldJump = true;
                     this.hasReceivedVelocity = true;
                 } else if (this.mode.getValue() == 4) {
                     this.intaveReduced = false;
@@ -390,6 +391,9 @@ public class Velocity extends Module {
     public void onTick(TickEvent event) {
         if (!this.isEnabled() || event.getType() != EventType.PRE) return;
 
+        if (this.mode.getValue() == 1) {
+            this.handleJumpReset();
+        }
         if (this.ticksSinceVelocity >= 0) {
             this.ticksSinceVelocity++;
         }
@@ -708,10 +712,11 @@ public class Velocity extends Module {
             if (event.getPacket() instanceof S12PacketEntityVelocity) {
                 S12PacketEntityVelocity packet = (S12PacketEntityVelocity) event.getPacket();
                 if (packet.getEntityID() == mc.thePlayer.getEntityId()) {
+                    this.ticksSinceVelocity = 0;
+                    this.ShouldJump = true;
 
                     if (this.mode.getValue() == 2) {
                         this.hasReceivedVelocity = true;
-                        this.ticksSinceVelocity = 0;
                         this.jumpFlag = packet.getMotionY() > 0;
                     }
 

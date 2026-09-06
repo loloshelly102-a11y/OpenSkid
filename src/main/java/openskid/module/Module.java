@@ -70,8 +70,12 @@ public abstract class Module {
         boolean enabled = !this.enabled;
         this.setEnabled(enabled);
         if (this.enabled == enabled) {
-            if (((HUD) OpenSkid.moduleManager.modules.get(HUD.class)).toggleSound.getValue()) {
-                OpenSkid.moduleManager.playSound(enabled);
+            try {
+                Module hud = OpenSkid.moduleManager == null ? null : OpenSkid.moduleManager.modules.get(HUD.class);
+                if (hud instanceof HUD && ((HUD) hud).toggleSound.getValue()) {
+                    OpenSkid.moduleManager.playSound(enabled);
+                }
+            } catch (Exception ignored) {
             }
 
             // Add a transient in-game notification for toggles

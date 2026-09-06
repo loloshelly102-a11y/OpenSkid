@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import me.ksyz.accountmanager.auth.SessionManager;
 import net.minecraft.client.gui.GuiButton;
+import openskid.ui.impl.gui.BackgroundRenderer;
+import openskid.ui.impl.gui.ModernGuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.ScaledResolution;
@@ -42,7 +44,7 @@ public class GuiSessionLogin extends GuiScreen {
         sessionField.setMaxStringLength(32767);
         sessionField.setFocused(true);
 
-        buttonList.add(new GuiButton(998, sr.getScaledWidth() / 2 - 100, sr.getScaledHeight() / 2 + 30, 200, 20, "Login"));
+        buttonList.add(new ModernGuiButton(998, sr.getScaledWidth() / 2 - 100, sr.getScaledHeight() / 2 + 30, 200, 20, "Login"));
 
         super.initGui();
     }
@@ -56,7 +58,12 @@ public class GuiSessionLogin extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawDefaultBackground();
+        try {
+            BackgroundRenderer.draw(width, height);
+        } catch (Exception e) {
+            drawDefaultBackground();
+        }
+        drawRect(0, 0, width, height, 0x99000000);
 
         mc.fontRendererObj.drawString(status, sr.getScaledWidth() / 2 - mc.fontRendererObj.getStringWidth(status) / 2, sr.getScaledHeight() / 2 - 30, Color.WHITE.getRGB());
         sessionField.drawTextBox();

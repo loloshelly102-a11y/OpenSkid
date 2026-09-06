@@ -65,6 +65,7 @@ public class ClickGUIModule extends Module {
                 || mc.currentScreen instanceof ClickGuiScreen
                 || mc.currentScreen instanceof LegacyClickGui
                 || mc.currentScreen instanceof NovaClickGui
+                || mc.currentScreen instanceof openskid.ui.impl.clickgui.card.CardClickGUI
                 || mc.currentScreen instanceof openskid.ui.impl.clickgui.modern.ModernClickGui;
         try {
             mc.displayGuiScreen(screen);

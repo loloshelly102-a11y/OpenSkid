@@ -6,6 +6,8 @@ import me.ksyz.accountmanager.auth.SessionManager;
 import me.ksyz.accountmanager.utils.Notification;
 import me.ksyz.accountmanager.utils.TextFormatting;
 import net.minecraft.client.gui.GuiButton;
+import openskid.ui.impl.gui.BackgroundRenderer;
+import openskid.ui.impl.gui.ModernGuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.ScaledResolution;
@@ -46,16 +48,16 @@ public class GuiCrackedLogin extends GuiScreen {
         usernameField.setMaxStringLength(16);
         usernameField.setFocused(true);
 
-        buttonList.add(new GuiButton(
+        buttonList.add(new ModernGuiButton(
                 998, sr.getScaledWidth() / 2 - 100, sr.getScaledHeight() / 2 + 30, 200, 20, "Login"
         ));
-        buttonList.add(new GuiButton(
+        buttonList.add(new ModernGuiButton(
                 997, sr.getScaledWidth() / 2 - 100, sr.getScaledHeight() / 2 + 54, 98, 20, "Random"
         ));
-        buttonList.add(new GuiButton(
+        buttonList.add(new ModernGuiButton(
                 996, sr.getScaledWidth() / 2 + 2, sr.getScaledHeight() / 2 + 54, 48, 20, "<"
         ));
-        buttonList.add(new GuiButton(
+        buttonList.add(new ModernGuiButton(
                 995, sr.getScaledWidth() / 2 + 54, sr.getScaledHeight() / 2 + 54, 48, 20, ">"
         ));
     }
@@ -76,7 +78,12 @@ public class GuiCrackedLogin extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawDefaultBackground();
+        try {
+            BackgroundRenderer.draw(width, height);
+        } catch (Exception e) {
+            drawDefaultBackground();
+        }
+        drawRect(0, 0, width, height, 0x99000000);
 
         drawCenteredString(
                 fontRendererObj, "Cracked Login",

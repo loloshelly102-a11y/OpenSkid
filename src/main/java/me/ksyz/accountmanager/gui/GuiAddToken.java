@@ -7,6 +7,8 @@ import me.ksyz.accountmanager.auth.SessionManager;
 import me.ksyz.accountmanager.utils.Notification;
 import me.ksyz.accountmanager.utils.TextFormatting;
 import net.minecraft.client.gui.*;
+import openskid.ui.impl.gui.BackgroundRenderer;
+import openskid.ui.impl.gui.ModernGuiButton;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.lwjgl.input.Keyboard;
 
@@ -50,7 +52,7 @@ public class GuiAddToken extends GuiScreen {
         tokenField.setMaxStringLength(32767);
         tokenField.setFocused(true);
 
-        buttonList.add(new GuiButton(998, sr.getScaledWidth() / 2 - 100, sr.getScaledHeight() / 2 + 30, 200, 20, "Add"));
+        buttonList.add(new ModernGuiButton(998, sr.getScaledWidth() / 2 - 100, sr.getScaledHeight() / 2 + 30, 200, 20, "Add"));
     }
 
     @Override
@@ -83,7 +85,12 @@ public class GuiAddToken extends GuiScreen {
         if (openButton != null) {
             openButton.enabled = openButtonEnabled;
         }
-        drawDefaultBackground();
+        try {
+            BackgroundRenderer.draw(width, height);
+        } catch (Exception e) {
+            drawDefaultBackground();
+        }
+        drawRect(0, 0, width, height, 0x99000000);
         super.drawScreen(mouseX, mouseY, partialTicks);
 
         drawCenteredString(

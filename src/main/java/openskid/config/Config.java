@@ -45,7 +45,10 @@ public class Config {
                 return;
             }
 
-            JsonElement parsed = new JsonParser().parse(new BufferedReader(new FileReader(file)));
+            JsonElement parsed;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
+                parsed = new JsonParser().parse(reader);
+            }
             if (parsed == null || !parsed.isJsonObject()) {
                 ChatUtil.sendFormatted(String.format("%sInvalid config format (&c&o%s&r)&r", OpenSkid.clientName, file.getName()));
                 return;
@@ -130,9 +133,18 @@ public class Config {
                 object.add(module.getName(), moduleObject);
             }
 
-            PrintWriter printWriter = new PrintWriter(new FileWriter(file));
-            printWriter.println(gson.toJson(object));
-            printWriter.close();
+            File temp = new File(file.getParentFile(), file.getName() + ".tmp");
+            try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(temp), "UTF-8"))) {
+                printWriter.println(gson.toJson(object));
+            }
+            if (file.exists() && !file.delete()) {
+                ((IAccessorMinecraft) mc).getLogger().error("Error saving config: could not replace " + file.getName());
+                return;
+            }
+            if (!temp.renameTo(file)) {
+                ((IAccessorMinecraft) mc).getLogger().error("Error saving config: could not replace " + file.getName());
+                return;
+            }
             ChatUtil.sendFormatted(String.format("%sConfig has been saved (&a&o%s&r)&r", OpenSkid.clientName, file.getName()));
         } catch (IOException e) {
             ((IAccessorMinecraft) mc).getLogger().error("Error saving config: " + e.getMessage());

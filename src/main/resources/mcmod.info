@@ -1,6 +1,8 @@
 [
   {
+    "modid": "openskid",
     "name": "OpenSkid",
+    "description": "OpenSkid ghost client.",
     "version": "${version}",
     "mcversion": "1.8.9",
     "authorList": [

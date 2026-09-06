@@ -91,7 +91,7 @@ public class LegacyClickGui extends GuiScreen {
                 AutoPlay.class, AutoGG.class, AutoReconnect.class, Panic.class, KillSults.class,
                 KillMessage.class, ViewPackets.class, AutoBuy.class, PartyDetector.class, PlayerList.class,
                 AutoRequeue.class, AutoWho.class, BedWars.class, BridgeInfo.class, DuelsStats.class,
-                MurderMystery.class, SumoFences.class, SkyWars.class, WoolWars.class, SpeedBuilders.class, SkywarsAlerts.class, ThePitUtils.class);
+                MurderMystery.class, SumoFences.class, SkyWars.class, WoolWars.class, SpeedBuilders.class, SkywarsAlerts.class, ThePitUtils.class, Hotbar.class);
 
         String[] names = {"Combat", "Movement", "Render", "Player", "Misc"};
         List<List<Module>> groups = Arrays.asList(combatModules, movementModules, renderModules, playerModules, miscModules);

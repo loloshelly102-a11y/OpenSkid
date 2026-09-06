@@ -312,7 +312,7 @@ public class WaterMark extends Module {
     }
 
     private void renderHerbWatermark(float x, float y) {
-        String text = "weedhack premium beta";
+        String text = "openskid";
         float textWidth = mc.fontRendererObj.getStringWidth(text);
         float boxWidth = textWidth + 4;
         float boxHeight = 12;
