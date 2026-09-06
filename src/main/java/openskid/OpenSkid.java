@@ -349,6 +349,11 @@ public class OpenSkid {
         me.ksyz.accountmanager.AccountManager.init();
         ViaMCP.create();
 
+        try {
+            openskid.setup.OneConfigPatcher.run(net.minecraft.client.Minecraft.getMinecraft().mcDataDir);
+        } catch (Exception ignored) {
+        }
+
         try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(OpenSkid.class.getResourceAsStream("/version.json")), StandardCharsets.UTF_8)) {
             JsonObject modInfo = new JsonParser().parse(reader).getAsJsonObject();
             version = modInfo.get("version").getAsString();
