@@ -9,6 +9,7 @@ import openskid.events.Render3DEvent;
 import openskid.events.TickEvent;
 import openskid.mixin.IAccessorRenderManager;
 import openskid.module.Module;
+import openskid.util.ItemUtil;
 import openskid.util.RenderUtil;
 import openskid.util.TeamUtil;
 import openskid.property.properties.BooleanProperty;
@@ -47,6 +48,8 @@ public class HitBox extends Module {
     public final ColorProperty color = new ColorProperty("color", new Color(255, 255, 255).getRGB(), () -> this.showHitbox.getValue() != 0);
     public final BooleanProperty teams = new BooleanProperty("teams", true, () -> this.showHitbox.getValue() == 1 || this.showHitbox.getValue() == 4);
     public final BooleanProperty botCheck = new BooleanProperty("bot-check", true, () -> this.showHitbox.getValue() == 1 || this.showHitbox.getValue() == 4);
+    public final BooleanProperty weaponOnly = new BooleanProperty("weapon-only", false);
+    public final BooleanProperty showBox = new BooleanProperty("show-box", false);
 
     public HitBox() {
         super("HitBox", false, false, "Enlarges entity hitboxes to make them easier to hit.");
@@ -55,7 +58,10 @@ public class HitBox extends Module {
     public static float getExpansion(Entity entity) {
         HitBox hitBox = (HitBox) OpenSkid.moduleManager.modules.get(HitBox.class);
         if (hitBox != null && hitBox.isEnabled() && entity instanceof EntityLivingBase) {
-            return hitBox.multiplier.getValue();
+            // Adapted from donor weapon-only gates: expand only with sword in hand.
+            if (!hitBox.weaponOnly.getValue() || ItemUtil.isHoldingSword()) {
+                return hitBox.multiplier.getValue();
+            }
         }
         return 1.0F;
     }
@@ -236,6 +242,25 @@ public class HitBox extends Module {
                 }
                 RenderUtil.disableRenderState();
             }
+        }
+        // Show-box renders the expanded hitbox of the current crosshair target,
+        // independent of the show-hitbox category filter. Default off.
+        if (this.isEnabled() && this.showBox.getValue() && mc.pointedEntity instanceof EntityLivingBase) {
+            EntityLivingBase target = (EntityLivingBase) mc.pointedEntity;
+            RenderUtil.enableRenderState();
+            Color boxColor = new Color(this.color.getValue());
+            float collisionSize = (float) ((double) target.getCollisionBorderSize() * this.multiplier.getValue());
+            AxisAlignedBB expandedBox = target.getEntityBoundingBox().expand(collisionSize, collisionSize, collisionSize);
+            AxisAlignedBB offsetBox = new AxisAlignedBB(
+                    expandedBox.minX - target.posX + (RenderUtil.lerpDouble(target.posX, target.lastTickPosX, event.getPartialTicks()) - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosX()),
+                    expandedBox.minY - target.posY + (RenderUtil.lerpDouble(target.posY, target.lastTickPosY, event.getPartialTicks()) - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosY()),
+                    expandedBox.minZ - target.posZ + (RenderUtil.lerpDouble(target.posZ, target.lastTickPosZ, event.getPartialTicks()) - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosZ()),
+                    expandedBox.maxX - target.posX + (RenderUtil.lerpDouble(target.posX, target.lastTickPosX, event.getPartialTicks()) - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosX()),
+                    expandedBox.maxY - target.posY + (RenderUtil.lerpDouble(target.posY, target.lastTickPosY, event.getPartialTicks()) - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosY()),
+                    expandedBox.maxZ - target.posZ + (RenderUtil.lerpDouble(target.posZ, target.lastTickPosZ, event.getPartialTicks()) - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosZ())
+            );
+            RenderUtil.drawBoundingBox(offsetBox, boxColor.getRed(), boxColor.getGreen(), boxColor.getBlue(), 150, 1.5F);
+            RenderUtil.disableRenderState();
         }
     }
 

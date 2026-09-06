@@ -7,6 +7,7 @@ import openskid.event.EventTarget;
 import openskid.event.types.EventType;
 import openskid.events.*;
 import openskid.mixin.IAccessorEntity;
+import openskid.mixin.IAccessorMinecraft;
 import openskid.module.Module;
 import openskid.property.properties.BooleanProperty;
 import openskid.property.properties.FloatProperty;
@@ -26,6 +27,7 @@ import net.minecraft.network.play.client.*;
 import net.minecraft.network.play.server.S12PacketEntityVelocity;
 import net.minecraft.network.play.server.S19PacketEntityStatus;
 import net.minecraft.network.play.server.S27PacketExplosion;
+import net.minecraft.network.play.server.S32PacketConfirmTransaction;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.MovingObjectPosition;
 
@@ -85,7 +87,7 @@ public class Velocity extends Module {
     private boolean oldGrimHolding = false;
     private boolean oldGrimAttacked = false;
 
-    public final ModeProperty mode = new ModeProperty("mode", 0, new String[]{"Vanilla", "Jump", "Hypixel", "Slap_Attack", "Intave", "GrimAC", "Matrix", "PolarJump", "Legit", "Delay", "Tick", "Zip", "Karhu", "MatrixReverse", "MatrixFull", "Intave14", "XZSwitch", "OldGrim"});
+    public final ModeProperty mode = new ModeProperty("mode", 0, new String[]{"Vanilla", "Jump", "Hypixel", "Slap_Attack", "Intave", "GrimAC", "Matrix", "PolarJump", "Legit", "Delay", "Tick", "Zip", "Karhu", "MatrixReverse", "MatrixFull", "Intave14", "XZSwitch", "OldGrim", "Vulcan", "BlocksMC", "GrimC03", "IntaveTimer"});
 
     public final PercentProperty chance = new PercentProperty("chance", 100, () -> mode.getValue() <= 1);
     public final PercentProperty horizontal = new PercentProperty("horizontal", 0, () -> mode.getValue() <= 1);
@@ -177,12 +179,36 @@ public class Velocity extends Module {
     public final FloatProperty oldGrimReduceProp = new FloatProperty("oldgrim-reduce", 0.5F, 0.0F, 1.0F, () -> mode.getValue() == 17);
     public final FloatProperty oldGrimRangeProp = new FloatProperty("oldgrim-range", 3.0F, 0.0F, 6.0F, () -> mode.getValue() == 17);
 
+    private boolean vulcanTransaction = false;
+    private boolean blocksHolding = false;
+    private boolean grimC03Pending = false;
+    private int grimC03Ticks = 0;
+    public final BooleanProperty onlyWhileTargeting = new BooleanProperty("only-while-targeting", false);
+    public final BooleanProperty pauseOnS = new BooleanProperty("pause-on-S", false);
+
     public Velocity() {
         super("Velocity", false, false, "Reduces or modifies incoming knockback velocity.");
     }
 
     private boolean isInLiquidOrWeb() {
         return mc.thePlayer.isInWater() || mc.thePlayer.isInLava() || ((IAccessorEntity) mc.thePlayer).getIsInWeb();
+    }
+
+    private boolean isVelocityPaused() {
+        if (mc.thePlayer == null) return true;
+        if (this.pauseOnS.getValue() && mc.gameSettings.keyBindBack.isKeyDown()) return true;
+        if (this.onlyWhileTargeting.getValue()) {
+            if (mc.objectMouseOver == null || mc.objectMouseOver.typeOfHit != MovingObjectPosition.MovingObjectType.ENTITY) return true;
+        }
+        return false;
+    }
+
+    private void resetAppendedTimer() {
+        try {
+            net.minecraft.util.Timer timer = ((IAccessorMinecraft) mc).getTimer();
+            if (timer != null) timer.timerSpeed = 1.0F;
+        } catch (Exception ignored) {
+        }
     }
 
     @EventTarget
@@ -192,6 +218,7 @@ public class Velocity extends Module {
             this.allowNext = true;
             return;
         }
+        if (this.isVelocityPaused()) return;
 
         if (!this.allowNext || !this.fakeCheck.getValue()) {
             this.allowNext = true;
@@ -443,6 +470,17 @@ public class Velocity extends Module {
                 this.zipTicks = 0;
             }
         }
+        if (this.mode.getValue() == 20 && this.grimC03Pending && !this.isVelocityPaused()) {
+            this.grimC03Ticks++;
+            if (mc.thePlayer.hurtTime > 0) {
+                mc.getNetHandler().addToSendQueue(new C03PacketPlayer(true));
+                this.grimC03Pending = false;
+                this.grimC03Ticks = 0;
+            } else if (this.grimC03Ticks > 40) {
+                this.grimC03Pending = false;
+                this.grimC03Ticks = 0;
+            }
+        }
     }
 
     private void handleJumpReset() {
@@ -652,11 +690,43 @@ public class Velocity extends Module {
                 }
             }
         }
+
+        if (this.mode.getValue() == 21 && event.getType() == EventType.PRE && !this.isVelocityPaused()) {
+            if (mc.thePlayer != null) {
+                try {
+                    net.minecraft.util.Timer timer = ((IAccessorMinecraft) mc).getTimer();
+                    if (timer != null) {
+                        int hurt = mc.thePlayer.hurtTime;
+                        if (hurt >= 8) timer.timerSpeed = 0.3F;
+                        else if (hurt > 2) timer.timerSpeed = 5.0F;
+                        else timer.timerSpeed = 1.0F;
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
     }
 
     @EventTarget
     public void onPacket(PacketEvent event) {
         if (!this.isEnabled() || event.isCancelled()) return;
+        if (this.isVelocityPaused()) return;
+
+        if (event.getType() == EventType.SEND) {
+            if (this.mode.getValue() == 19 && event.getPacket() instanceof C0BPacketEntityAction && this.blocksHolding) {
+                this.blocksHolding = false;
+                event.setCancelled(true);
+                return;
+            }
+            if (this.mode.getValue() == 21 && event.getPacket() instanceof C03PacketPlayer
+                    && !(event.getPacket() instanceof C03PacketPlayer.C04PacketPlayerPosition)
+                    && !(event.getPacket() instanceof C03PacketPlayer.C05PacketPlayerLook)
+                    && !(event.getPacket() instanceof C03PacketPlayer.C06PacketPlayerPosLook)
+                    && mc.thePlayer != null && mc.thePlayer.hurtTime != 0) {
+                event.setCancelled(true);
+                return;
+            }
+        }
 
         if (this.mode.getValue() == 3 && event.getType() == EventType.SEND) {
             Packet<?> packet = event.getPacket();
@@ -767,6 +837,19 @@ public class Velocity extends Module {
                             ChatUtil.sendFormatted(OpenSkid.clientName + "Delay hold");
                         }
                     }
+                    if (this.mode.getValue() == 19) {
+                        this.blocksHolding = true;
+                        event.setCancelled(true);
+                        mc.getNetHandler().addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SNEAKING));
+                        mc.getNetHandler().addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SNEAKING));
+                    }
+                    if (this.mode.getValue() == 20) {
+                        if (MoveUtil.isMoving()) {
+                            this.grimC03Pending = true;
+                            this.grimC03Ticks = 0;
+                            event.setCancelled(true);
+                        }
+                    }
                     if (this.debugLog.getValue()) {
                         ChatUtil.sendFormatted(
                                 String.format(
@@ -780,6 +863,12 @@ public class Velocity extends Module {
                         );
                     }
                 }
+            }
+
+            if (this.mode.getValue() == 18 && event.getPacket() instanceof S32PacketConfirmTransaction) {
+                event.setCancelled(true);
+                mc.getNetHandler().addToSendQueue(new C0FPacketConfirmTransaction(this.vulcanTransaction ? 1 : -1, (short) (this.vulcanTransaction ? -1 : 1), this.vulcanTransaction));
+                this.vulcanTransaction = !this.vulcanTransaction;
             }
 
             if (event.getPacket() instanceof S19PacketEntityStatus) {
@@ -880,6 +969,10 @@ public class Velocity extends Module {
         this.xzChanceCounter = 0;
         this.oldGrimHolding = false;
         this.oldGrimAttacked = false;
+        this.vulcanTransaction = false;
+        this.blocksHolding = false;
+        this.grimC03Pending = false;
+        this.grimC03Ticks = 0;
         this.resetBadPackets();
     }
 
@@ -921,6 +1014,11 @@ public class Velocity extends Module {
         this.xzChanceCounter = 0;
         this.oldGrimHolding = false;
         this.oldGrimAttacked = false;
+        this.vulcanTransaction = false;
+        this.blocksHolding = false;
+        this.grimC03Pending = false;
+        this.grimC03Ticks = 0;
+        this.resetAppendedTimer();
         this.resetBadPackets();
     }
 

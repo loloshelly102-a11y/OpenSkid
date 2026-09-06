@@ -50,16 +50,16 @@ import java.util.Random;
 public class NoSlow extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
 
-    public final ModeProperty swordMode = new ModeProperty("Sword Mode", 1, new String[]{"None", "Vanilla", "Hypixel", "NCP", "NewNCP", "Watchdog", "Intave", "Grim", "NewGrim", "Verus", "AAC", "Spartan", "OpalWatchdog", "GrimAC", "HypixelNew", "IntaveNew", "OldGrim", "VanillaNew", "Exhi", "GrimTest", "GrimSemi", "Luckyvn", "OldIntave", "Intave14", "IntaveBlink", "OldIntaveV2"});
+    public final ModeProperty swordMode = new ModeProperty("Sword Mode", 1, new String[]{"None", "Vanilla", "Hypixel", "NCP", "NewNCP", "Watchdog", "Intave", "Grim", "NewGrim", "Verus", "AAC", "Spartan", "OpalWatchdog", "GrimAC", "HypixelNew", "IntaveNew", "OldGrim", "VanillaNew", "Exhi", "GrimTest", "GrimSemi", "Luckyvn", "OldIntave", "Intave14", "IntaveBlink", "OldIntaveV2", "Vulcan", "Grim19"});
     public final IntProperty swapDelay = new IntProperty("Swap Delay", 0, 0, 3, () -> swordMode.getValue() == 2);
     public final BooleanProperty noAttack = new BooleanProperty("No Attack", false, () -> swordMode.getValue() == 2);
     public final PercentProperty swordMotion = new PercentProperty("Sword Motion", 100, () -> this.swordMode.getValue() != 0);
     public final BooleanProperty swordSprint = new BooleanProperty("Sword Sprint", true, () -> this.swordMode.getValue() != 0);
     public final BooleanProperty onlyKillAuraAutoBlock = new BooleanProperty("Only Kill Aura Auto Block", false, () -> this.swordMode.getValue() != 0);
-    public final ModeProperty foodMode = new ModeProperty("Food Mode", 0, new String[]{"None", "Vanilla", "Float", "NCP", "NewNCP", "Watchdog", "Intave", "Grim", "NewGrim", "Verus", "AAC", "Spartan", "OpalWatchdog", "GrimAC", "HypixelNew", "IntaveNew", "OldGrim", "VanillaNew", "Exhi", "GrimTest", "GrimSemi", "Luckyvn", "OldIntave", "Intave14", "IntaveBlink", "OldIntaveV2"});
+    public final ModeProperty foodMode = new ModeProperty("Food Mode", 0, new String[]{"None", "Vanilla", "Float", "NCP", "NewNCP", "Watchdog", "Intave", "Grim", "NewGrim", "Verus", "AAC", "Spartan", "OpalWatchdog", "GrimAC", "HypixelNew", "IntaveNew", "OldGrim", "VanillaNew", "Exhi", "GrimTest", "GrimSemi", "Luckyvn", "OldIntave", "Intave14", "IntaveBlink", "OldIntaveV2", "Vulcan", "Grim19"});
     public final PercentProperty foodMotion = new PercentProperty("Food Motion", 100, () -> this.foodMode.getValue() != 0);
     public final BooleanProperty foodSprint = new BooleanProperty("Food Sprint", true, () -> this.foodMode.getValue() != 0);
-    public final ModeProperty bowMode = new ModeProperty("Bow Mode", 0, new String[]{"None", "Vanilla", "Float", "NCP", "NewNCP", "Watchdog", "Intave", "Grim", "NewGrim", "Verus", "AAC", "Spartan", "OpalWatchdog", "GrimAC", "HypixelNew", "IntaveNew", "OldGrim", "VanillaNew", "Exhi", "GrimTest", "GrimSemi", "Luckyvn", "OldIntave", "Intave14", "IntaveBlink", "OldIntaveV2"});
+    public final ModeProperty bowMode = new ModeProperty("Bow Mode", 0, new String[]{"None", "Vanilla", "Float", "NCP", "NewNCP", "Watchdog", "Intave", "Grim", "NewGrim", "Verus", "AAC", "Spartan", "OpalWatchdog", "GrimAC", "HypixelNew", "IntaveNew", "OldGrim", "VanillaNew", "Exhi", "GrimTest", "GrimSemi", "Luckyvn", "OldIntave", "Intave14", "IntaveBlink", "OldIntaveV2", "Vulcan", "Grim19"});
     public final PercentProperty bowMotion = new PercentProperty("Bow Motion", 100, () -> this.bowMode.getValue() != 0);
     public final BooleanProperty bowSprint = new BooleanProperty("Bow Sprint", true, () -> this.bowMode.getValue() != 0);
 
@@ -92,6 +92,8 @@ public class NoSlow extends Module {
     private static final int DONOR_INTAVE14 = 5;
     private static final int DONOR_INTAVEBLINK = 6;
     private static final int DONOR_OLDINTAVEV2 = 7;
+    private static final int DONOR_VULCAN = 8;
+    private static final int DONOR_GRIM19 = 9;
 
     public final BooleanProperty antiSwitch = new BooleanProperty("Anti-Switch", false, () -> this.hasMiauMode());
 
@@ -111,6 +113,10 @@ public class NoSlow extends Module {
     public final BooleanProperty intaveBlinkPacket = new BooleanProperty("IntaveBlink Packet", true, () -> swordMode.getValue() == 24 || foodMode.getValue() == 24 || bowMode.getValue() == 24);
     public final IntProperty oldIntaveV2Delay = new IntProperty("OldIntaveV2 Delay", 5, 1, 20, () -> swordMode.getValue() == 25 || foodMode.getValue() == 25 || bowMode.getValue() == 25);
     public final BooleanProperty oldIntaveV2Packet = new BooleanProperty("OldIntaveV2 Packet", true, () -> swordMode.getValue() == 25 || foodMode.getValue() == 25 || bowMode.getValue() == 25);
+    public final IntProperty vulcanInterval = new IntProperty("Vulcan Interval", 4, 1, 10, () -> swordMode.getValue() == 26 || foodMode.getValue() == 26 || bowMode.getValue() == 26);
+    public final BooleanProperty vulcanPacket = new BooleanProperty("Vulcan Packet", true, () -> swordMode.getValue() == 26 || foodMode.getValue() == 26 || bowMode.getValue() == 26);
+    public final IntProperty grim19Interval = new IntProperty("Grim19 Interval", 5, 1, 20, () -> swordMode.getValue() == 27 || foodMode.getValue() == 27 || bowMode.getValue() == 27);
+    public final BooleanProperty grim19Swap = new BooleanProperty("Grim19 Swap", true, () -> swordMode.getValue() == 27 || foodMode.getValue() == 27 || bowMode.getValue() == 27);
 
     // inlined BadPacketsComponent (Miau tracks these globally)
     private boolean bpSlot, bpAttack, bpSwing, bpBlock, bpInventory;
@@ -157,6 +163,8 @@ public class NoSlow extends Module {
     private int oldIntaveTicks;
     private long intave14LastRelease;
     private int oldIntaveV2Ticks;
+    private int vulcanTicks;
+    private int grim19Ticks;
 
     private int delay = 0;
     private boolean post = false;
@@ -390,7 +398,9 @@ public class NoSlow extends Module {
                 || this.isDonorModeUsed(DONOR_OLDINTAVE)
                 || this.isDonorModeUsed(DONOR_INTAVE14)
                 || this.isDonorModeUsed(DONOR_INTAVEBLINK)
-                || this.isDonorModeUsed(DONOR_OLDINTAVEV2)) {
+                || this.isDonorModeUsed(DONOR_OLDINTAVEV2)
+                || this.isDonorModeUsed(DONOR_VULCAN)
+                || this.isDonorModeUsed(DONOR_GRIM19)) {
             this.donorOnPacket(event);
         }
     }
@@ -416,6 +426,8 @@ public class NoSlow extends Module {
         this.oldIntaveTicks = 0;
         this.intave14LastRelease = 0L;
         this.oldIntaveV2Ticks = 0;
+        this.vulcanTicks = 0;
+        this.grim19Ticks = 0;
     }
 
     @Override
@@ -439,6 +451,8 @@ public class NoSlow extends Module {
         this.oldIntaveTicks = 0;
         this.intave14LastRelease = 0L;
         this.oldIntaveV2Ticks = 0;
+        this.vulcanTicks = 0;
+        this.grim19Ticks = 0;
         if (this.isMiauModeUsed(MIAU_OPAL_WATCHDOG) && mc.thePlayer != null) {
             this.opalRelease();
             this.opalResetCycle();
@@ -656,7 +670,9 @@ public class NoSlow extends Module {
                 || this.isDonorModeUsed(DONOR_OLDINTAVE)
                 || this.isDonorModeUsed(DONOR_INTAVE14)
                 || this.isDonorModeUsed(DONOR_INTAVEBLINK)
-                || this.isDonorModeUsed(DONOR_OLDINTAVEV2)) {
+                || this.isDonorModeUsed(DONOR_OLDINTAVEV2)
+                || this.isDonorModeUsed(DONOR_VULCAN)
+                || this.isDonorModeUsed(DONOR_GRIM19)) {
             this.updateDonor(event);
         }
     }
@@ -869,7 +885,7 @@ public class NoSlow extends Module {
 
     private int donorIdx(ModeProperty property) {
         int v = property.getValue();
-        return v >= DONOR_BASE && v < DONOR_BASE + 8 ? v - DONOR_BASE : -1;
+        return v >= DONOR_BASE && v < DONOR_BASE + 10 ? v - DONOR_BASE : -1;
     }
 
     private boolean isDonorModeUsed(int mode) {
@@ -921,6 +937,12 @@ public class NoSlow extends Module {
         }
         if (this.isDonorModeUsed(DONOR_OLDINTAVEV2)) {
             this.updateDonorOldIntaveV2();
+        }
+        if (this.isDonorModeUsed(DONOR_VULCAN)) {
+            this.updateDonorVulcan();
+        }
+        if (this.isDonorModeUsed(DONOR_GRIM19)) {
+            this.updateDonorGrim19();
         }
     }
 
@@ -1088,6 +1110,37 @@ public class NoSlow extends Module {
         }
     }
 
+    private void updateDonorVulcan() {
+        this.vulcanTicks++;
+        if (!this.donorAnyActive(DONOR_VULCAN)) return;
+        if (this.vulcanTicks < Math.max(1, this.vulcanInterval.getValue())) return;
+        this.vulcanTicks = 0;
+        PacketUtil.sendPacket(new C07PacketPlayerDigging(
+                C07PacketPlayerDigging.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, EnumFacing.DOWN));
+        if (mc.thePlayer.getHeldItem() != null) {
+            PacketUtil.sendPacket(new C08PacketPlayerBlockPlacement(
+                    new BlockPos(-1, -1, -1), 255, mc.thePlayer.getHeldItem(), 0.0F, 0.0F, 0.0F));
+        }
+    }
+
+    private void updateDonorGrim19() {
+        this.grim19Ticks++;
+        if (!this.donorAnyActive(DONOR_GRIM19)) return;
+        if (this.grim19Ticks < Math.max(1, this.grim19Interval.getValue())) return;
+        this.grim19Ticks = 0;
+        if (this.grim19Swap.getValue()) {
+            int currentSlot = mc.thePlayer.inventory.currentItem;
+            PacketUtil.sendPacket(new C09PacketHeldItemChange(currentSlot % 8 + 1));
+            PacketUtil.sendPacket(new C09PacketHeldItemChange(currentSlot));
+        }
+        PacketUtil.sendPacket(new C07PacketPlayerDigging(
+                C07PacketPlayerDigging.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, EnumFacing.DOWN));
+        if (mc.thePlayer.getHeldItem() != null) {
+            PacketUtil.sendPacket(new C08PacketPlayerBlockPlacement(
+                    new BlockPos(-1, -1, -1), 255, mc.thePlayer.getHeldItem(), 0.0F, 0.0F, 0.0F));
+        }
+    }
+
     private void flushGrimTest() {
         for (Packet<?> p : new ArrayList<Packet<?>>(this.grimTestPackets)) {
             PacketUtil.sendPacketNoEvent(p);
@@ -1167,6 +1220,21 @@ public class NoSlow extends Module {
                         || (this.isDonorModeUsed(DONOR_OLDINTAVEV2) && this.oldIntaveV2Packet.getValue());
                 if (active && packetOn) {
                     event.setCancelled(true);
+                }
+            }
+        }
+        if ((this.isDonorModeUsed(DONOR_VULCAN) || this.isDonorModeUsed(DONOR_GRIM19))
+                && event.getPacket() instanceof C07PacketPlayerDigging) {
+            C07PacketPlayerDigging digging = (C07PacketPlayerDigging) event.getPacket();
+            if (digging.getStatus() == C07PacketPlayerDigging.Action.RELEASE_USE_ITEM) {
+                boolean vulcanActive = this.donorAnyActive(DONOR_VULCAN) && this.vulcanPacket.getValue();
+                boolean grimActive = this.donorAnyActive(DONOR_GRIM19);
+                if (vulcanActive || grimActive) {
+                    event.setCancelled(true);
+                    if (mc.thePlayer.getHeldItem() != null) {
+                        PacketUtil.sendPacket(new C08PacketPlayerBlockPlacement(
+                                new BlockPos(-1, -1, -1), 255, mc.thePlayer.getHeldItem(), 0.0F, 0.0F, 0.0F));
+                    }
                 }
             }
         }

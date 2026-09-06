@@ -3,22 +3,29 @@ package openskid.module.modules;
 import com.google.common.base.CaseFormat;
 import openskid.event.EventTarget;
 import openskid.event.types.EventType;
+import openskid.events.PacketEvent;
 import openskid.events.UpdateEvent;
 import openskid.module.Module;
 import openskid.property.properties.FloatProperty;
 import openskid.property.properties.IntProperty;
 import openskid.property.properties.ModeProperty;
 import openskid.util.MoveUtil;
+import openskid.util.PacketUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.play.client.C03PacketPlayer;
 
 // Adapted from RavenS+ Step submodes (Hypixel 1.5, Hypixel), rewritten for openskid events.
 public class Step extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
-    public final ModeProperty mode = new ModeProperty("mode", 0, new String[]{"HYPIXEL15", "HYPIXEL"});
+    public final ModeProperty mode = new ModeProperty("mode", 0, new String[]{"HYPIXEL15", "HYPIXEL", "Vanilla", "NCP", "OldNCP", "Matrix"});
     public final FloatProperty height15 = new FloatProperty("height-15", 1.5F, 0.6F, 2.5F, () -> mode.getValue() == 0);
     public final IntProperty delay15 = new IntProperty("delay-15", 1000, 0, 5000, () -> mode.getValue() == 0);
     public final FloatProperty height = new FloatProperty("height", 1.0F, 0.6F, 2.5F, () -> mode.getValue() == 1);
     public final IntProperty delay = new IntProperty("delay", 0, 0, 5000, () -> mode.getValue() == 1);
+    public final FloatProperty vanillaHeight = new FloatProperty("vanilla-height", 1.0F, 0.6F, 2.5F, () -> mode.getValue() == 2);
+    public final FloatProperty ncpHeight = new FloatProperty("ncp-height", 1.0F, 0.6F, 2.5F, () -> mode.getValue() == 3);
+    public final FloatProperty oldNcpHeight = new FloatProperty("oldncp-height", 1.0F, 0.6F, 2.5F, () -> mode.getValue() == 4);
+    public final FloatProperty matrixHeight = new FloatProperty("matrix-height", 2.0F, 0.6F, 2.5F, () -> mode.getValue() == 5);
 
     private int offGroundTicks = -1;
     private boolean stepping;
@@ -29,7 +36,20 @@ public class Step extends Module {
     }
 
     private float activeHeight() {
-        return this.mode.getValue() == 0 ? this.height15.getValue() : this.height.getValue();
+        switch (this.mode.getValue()) {
+            case 0:
+                return this.height15.getValue();
+            case 2:
+                return this.vanillaHeight.getValue();
+            case 3:
+                return this.ncpHeight.getValue();
+            case 4:
+                return this.oldNcpHeight.getValue();
+            case 5:
+                return this.matrixHeight.getValue();
+            default:
+                return this.height.getValue();
+        }
     }
 
     private int activeDelay() {
@@ -104,6 +124,54 @@ public class Step extends Module {
         }
     }
 
+    private void sendNcpStep(double baseY) {
+        double x = mc.thePlayer.posX;
+        double y = baseY;
+        double z = mc.thePlayer.posZ;
+        PacketUtil.sendPacket(new C03PacketPlayer.C04PacketPlayerPosition(x, y + 0.41999998688698, z, false));
+        PacketUtil.sendPacket(new C03PacketPlayer.C04PacketPlayerPosition(x, y + 0.7531999805212, z, false));
+    }
+
+    private void updateVanilla() {
+        mc.thePlayer.stepHeight = this.vanillaHeight.getValue();
+        this.stepping = false;
+    }
+
+    private void updateNcp() {
+        if (this.offGroundTicks == 0) {
+            mc.thePlayer.stepHeight = this.ncpHeight.getValue();
+            this.sendNcpStep(mc.thePlayer.posY);
+        }
+        if (this.offGroundTicks > 5) {
+            this.stepping = false;
+        }
+    }
+
+    private void updateOldNcp() {
+        if (this.offGroundTicks == 0) {
+            mc.thePlayer.stepHeight = this.oldNcpHeight.getValue();
+            this.sendNcpStep(mc.thePlayer.posY);
+        }
+        if (this.offGroundTicks > 5) {
+            this.stepping = false;
+        }
+    }
+
+    private void updateMatrix() {
+        if (this.offGroundTicks == 0) {
+            mc.thePlayer.stepHeight = this.matrixHeight.getValue();
+            double x = mc.thePlayer.posX;
+            double y = mc.thePlayer.posY;
+            double z = mc.thePlayer.posZ;
+            PacketUtil.sendPacket(new C03PacketPlayer.C04PacketPlayerPosition(x, y + 0.41999998688698, z, false));
+            PacketUtil.sendPacket(new C03PacketPlayer.C04PacketPlayerPosition(x, y + 0.7531999805212, z, false));
+            PacketUtil.sendPacket(new C03PacketPlayer.C04PacketPlayerPosition(x, y + 1.001335979112147, z, false));
+        }
+        if (this.offGroundTicks > 5) {
+            this.stepping = false;
+        }
+    }
+
     @EventTarget
     public void onUpdate(UpdateEvent event) {
         if (!this.isEnabled() || event.getType() != EventType.PRE || mc.thePlayer == null || mc.theWorld == null) {
@@ -128,10 +196,27 @@ public class Step extends Module {
         }
         if (this.mode.getValue() == 0) {
             this.updateHypixel15();
-        } else {
+        } else if (this.mode.getValue() == 1) {
             this.updateHypixel();
+        } else if (this.mode.getValue() == 2) {
+            this.updateVanilla();
+        } else if (this.mode.getValue() == 3) {
+            this.updateNcp();
+        } else if (this.mode.getValue() == 4) {
+            this.updateOldNcp();
+        } else {
+            this.updateMatrix();
         }
         if (this.offGroundTicks > 20) {
+            this.stepping = false;
+        }
+    }
+
+    @EventTarget
+    public void onStepPacket(PacketEvent event) {
+        if (!this.isEnabled() || event.getType() != EventType.SEND) return;
+        if (this.mode.getValue() == 4 && this.stepping && event.getPacket() instanceof C03PacketPlayer && mc.thePlayer != null) {
+            mc.thePlayer.motionY += 0.02;
             this.stepping = false;
         }
     }

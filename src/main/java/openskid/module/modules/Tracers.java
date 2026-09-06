@@ -11,6 +11,7 @@ import openskid.util.RenderUtil;
 import openskid.util.RotationUtil;
 import openskid.util.TeamUtil;
 import openskid.property.properties.BooleanProperty;
+import openskid.property.properties.FloatProperty;
 import openskid.property.properties.PercentProperty;
 import openskid.property.properties.ModeProperty;
 import openskid.property.properties.IntProperty;
@@ -36,6 +37,9 @@ public class Tracers extends Module {
     public final BooleanProperty showFriends = new BooleanProperty("friends", true);
     public final BooleanProperty showEnemies = new BooleanProperty("enemies", true);
     public final BooleanProperty showBots = new BooleanProperty("bots", false);
+    public final FloatProperty lineWidth = new FloatProperty("line-width", 1.5F, 0.5F, 5.0F);
+    public final BooleanProperty showInvis = new BooleanProperty("show-invis", true);
+    public final BooleanProperty rainbow = new BooleanProperty("rainbow", false);
     private final List<EntityPlayer> tracerPlayers = new ArrayList<EntityPlayer>(64);
     private float cachedAlpha = -1.0F;
     private long cachedHudBucket = -1L;
@@ -60,6 +64,8 @@ public class Tracers extends Module {
     private boolean shouldRender(EntityPlayer entityPlayer) {
         if (entityPlayer.deathTime > 0) {
             return false;
+        } else if (!this.showInvis.getValue() && entityPlayer.isInvisible()) {
+            return false;
         } else if (mc.getRenderViewEntity().getDistanceToEntity(entityPlayer) > (float) this.distance.getValue()) {
             return false;
         } else if (entityPlayer != mc.thePlayer && entityPlayer != mc.getRenderViewEntity()) {
@@ -83,7 +89,7 @@ public class Tracers extends Module {
             Color color = OpenSkid.targetManager.getColor();
             return new Color((float) color.getRed() / 255.0F, (float) color.getGreen() / 255.0F, (float) color.getBlue() / 255.0F, alpha);
         } else {
-            switch (this.colorMode.getValue()) {
+            switch (this.rainbow.getValue() ? 2 : this.colorMode.getValue()) {
                 case 0:
                     return TeamUtil.getTeamColor(entityPlayer, alpha);
                 case 1: {
@@ -187,7 +193,7 @@ public class Tracers extends Module {
                         (float) color.getGreen() / 255.0F,
                         (float) color.getBlue() / 255.0F,
                         (float) color.getAlpha() / 255.0F,
-                        1.5F
+                        this.lineWidth.getValue()
                 );
             }
             RenderUtil.disableRenderState();

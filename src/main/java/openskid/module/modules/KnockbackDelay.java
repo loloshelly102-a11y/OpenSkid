@@ -9,8 +9,12 @@ import openskid.events.PacketEvent;
 import openskid.events.UpdateEvent;
 import openskid.module.Module;
 import openskid.property.properties.BooleanProperty;
+import openskid.property.properties.FloatProperty;
 import openskid.property.properties.IntProperty;
+import openskid.property.properties.TextProperty;
 import openskid.util.ItemUtil;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import openskid.util.PacketUtil;
 import openskid.util.RandomUtil;
 import net.minecraft.client.Minecraft;
@@ -40,6 +44,11 @@ public class KnockbackDelay extends Module {
     private final BooleanProperty realtimeDamage = new BooleanProperty("RealtimeDamage", true);
     private final BooleanProperty requireTarget = new BooleanProperty("RequireTarget", false);
     private final BooleanProperty onlySwords = new BooleanProperty("OnlySwords", false);
+    private final FloatProperty maxTargetDistance = new FloatProperty("MaxTargetDistance", 0.0F, 0.0F, 12.0F);
+    private final IntProperty maxDelayMs = new IntProperty("MaxDelayMs", 0, 0, 1000);
+    private final BooleanProperty onlyInAir = new BooleanProperty("OnlyInAir", false);
+    private final BooleanProperty onlyLookingAtPlayer = new BooleanProperty("OnlyLookingAtPlayer", false);
+    private final TextProperty itemWhitelist = new TextProperty("ItemWhitelist", "");
 
     private final Queue<TimedPacket> packets = new ConcurrentLinkedQueue<>();
     private boolean blink;
@@ -75,6 +84,9 @@ public class KnockbackDelay extends Module {
         }
 
         int delay = mc.thePlayer.onGround ? groundDelay.getValue() : airDelay.getValue();
+        if (this.maxDelayMs.getValue() > 0) {
+            delay = Math.min(delay, this.maxDelayMs.getValue());
+        }
 
         if (!packets.isEmpty()) {
             handle(delay);
@@ -144,7 +156,43 @@ public class KnockbackDelay extends Module {
 
         if (onlySwords.getValue() && !ItemUtil.isHoldingSword()) return false;
 
+        // Full conditions: the delay applies only when ALL enabled
+        // conditions pass. Numeric limits of 0 and empty text mean disabled.
+        if (this.onlyInAir.getValue() && mc.thePlayer.onGround) return false;
+
+        if (this.onlyLookingAtPlayer.getValue() && !isLookingAtPlayer()) return false;
+
+        if (this.maxTargetDistance.getValue() > 0.0F) {
+            Entity target = findTarget();
+            if (target == null || mc.thePlayer.getDistanceToEntity(target) > this.maxTargetDistance.getValue()) return false;
+        }
+
+        if (!isWhitelisted()) return false;
+
         return true;
+    }
+
+    private boolean isLookingAtPlayer() {
+        if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY) {
+            return mc.objectMouseOver.entityHit instanceof EntityPlayer;
+        }
+        return mc.pointedEntity instanceof EntityPlayer;
+    }
+
+    private boolean isWhitelisted() {
+        String raw = this.itemWhitelist.getValue();
+        if (raw == null || raw.trim().isEmpty()) return true;
+        ItemStack held = mc.thePlayer.getHeldItem();
+        if (held == null) return false;
+        String itemName = held.getUnlocalizedName().toLowerCase();
+        String displayName = held.getDisplayName().toLowerCase();
+        for (String token : raw.split(",")) {
+            String entry = token.trim().toLowerCase();
+            if (!entry.isEmpty() && (itemName.contains(entry) || displayName.contains(entry))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void reset() {

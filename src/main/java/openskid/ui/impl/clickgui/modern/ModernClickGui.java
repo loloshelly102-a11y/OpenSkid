@@ -113,7 +113,9 @@ public class ModernClickGui extends GuiScreen {
                 OpenSkid.moduleManager.getModule(Freecam.class),
                 OpenSkid.moduleManager.getModule(Spider.class),
                 OpenSkid.moduleManager.getModule(Tower.class),
-                OpenSkid.moduleManager.getModule(NoClickDelay.class)
+                OpenSkid.moduleManager.getModule(NoClickDelay.class),
+                OpenSkid.moduleManager.getModule(VClip.class),
+                OpenSkid.moduleManager.getModule(StopMotion.class)
         );
 
         List<Module> renderModules = Arrays.asList(
@@ -206,7 +208,9 @@ public class ModernClickGui extends GuiScreen {
                 OpenSkid.moduleManager.getModule(LegitScaffold.class),
                 OpenSkid.moduleManager.getModule(BlockLadder.class),
                 OpenSkid.moduleManager.getModule(AutoBed.class),
-                OpenSkid.moduleManager.getModule(AutoRespawn.class)
+                OpenSkid.moduleManager.getModule(AutoRespawn.class),
+                OpenSkid.moduleManager.getModule(FastUse.class),
+                OpenSkid.moduleManager.getModule(DelayRemover.class)
         );
 
         List<Module> miscModules = Arrays.asList(

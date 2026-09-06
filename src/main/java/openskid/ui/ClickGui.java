@@ -104,6 +104,8 @@ public class ClickGui extends GuiScreen {
         movementModules.add(OpenSkid.moduleManager.getModule(Freecam.class));
         movementModules.add(OpenSkid.moduleManager.getModule(Spider.class));
         movementModules.add(OpenSkid.moduleManager.getModule(NoClickDelay.class));
+        movementModules.add(OpenSkid.moduleManager.getModule(VClip.class));
+        movementModules.add(OpenSkid.moduleManager.getModule(StopMotion.class));
         movementModules.add(OpenSkid.moduleManager.getModule(Tower.class));
 
         List<Module> renderModules = new ArrayList<>();
@@ -196,6 +198,8 @@ public class ClickGui extends GuiScreen {
         playerModules.add(OpenSkid.moduleManager.getModule(BlockLadder.class));
         playerModules.add(OpenSkid.moduleManager.getModule(AutoBed.class));
         playerModules.add(OpenSkid.moduleManager.getModule(AutoRespawn.class));
+        playerModules.add(OpenSkid.moduleManager.getModule(FastUse.class));
+        playerModules.add(OpenSkid.moduleManager.getModule(DelayRemover.class));
 
         List<Module> miscModules = new ArrayList<>();
         miscModules.add(OpenSkid.moduleManager.getModule(Spammer.class));

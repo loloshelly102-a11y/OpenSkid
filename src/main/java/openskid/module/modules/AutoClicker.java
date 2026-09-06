@@ -13,6 +13,7 @@ import openskid.property.properties.IntProperty;
 import openskid.property.properties.ModeProperty;
 import openskid.property.properties.PercentProperty;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.WorldSettings.GameType;
@@ -50,6 +51,9 @@ public class AutoClicker extends Module {
     public final BooleanProperty fatigue = new BooleanProperty("fatigue", false);
     public final FloatProperty fatigueFloor = new FloatProperty("fatigue-floor", 0.75F, 0.5F, 1.0F, this.fatigue::getValue);
     public final IntProperty fatigueSecs = new IntProperty("fatigue-secs", 120, 30, 600, this.fatigue::getValue);
+    public final BooleanProperty inventoryClicks = new BooleanProperty("inventory-clicks", false);
+    public final IntProperty startDelayMs = new IntProperty("start-delay-ms", 0, 0, 1000);
+    private long enabledAtMs = 0L;
     private long doubleClickAtMs = 0L;
     private long fightStartMs = 0L;
     private long lastClickMs = 0L;
@@ -228,7 +232,11 @@ public class AutoClicker extends Module {
             if (this.blockHitDelay > 0L) {
                 this.blockHitDelay -= 50L;
             }
-            if (mc.currentScreen != null) {
+            // Inventory clicks run the normal click cycle inside container GUIs,
+            // adapted from raven inventory-fill (which arms a start delay then
+            // clicks the hovered slot). Here the attack-key cycle runs instead.
+            boolean invMode = this.inventoryClicks.getValue() && mc.currentScreen instanceof GuiContainer;
+            if (mc.currentScreen != null && !invMode) {
                 this.clickPending = false;
                 this.blockHitPending = false;
                 this.guiClosedAt = System.currentTimeMillis();
@@ -241,7 +249,10 @@ public class AutoClicker extends Module {
                     this.blockHitPending = false;
                     KeyBindUtil.updateKeyState(mc.gameSettings.keyBindUseItem.getKeyCode());
                 }
-                if (this.isEnabled() && this.canClick() && mc.gameSettings.keyBindAttack.isKeyDown()) {
+                // Start delay waits this long after toggle before the first click.
+                // Adapted from raven inventory start-delay arming. Default 0 = off.
+                if (this.isEnabled() && this.canClick() && mc.gameSettings.keyBindAttack.isKeyDown()
+                        && System.currentTimeMillis() - this.enabledAtMs >= (long) this.startDelayMs.getValue()) {
                     if (!this.isInvFillPaused() && !mc.thePlayer.isUsingItem()) {
                         // Ported from raven ClickAssist.java (per-click chance gate).
                         if (this.breakChance.getValue() < 100 && RandomUtil.nextInt(1, 100) > this.breakChance.getValue()) {
@@ -318,6 +329,7 @@ public class AutoClicker extends Module {
         this.doubleClickAtMs = 0L;
         this.fightStartMs = 0L;
         this.lastClickMs = 0L;
+        this.enabledAtMs = System.currentTimeMillis();
     }
 
     public void onDisabled() {
@@ -333,6 +345,7 @@ public class AutoClicker extends Module {
         this.doubleClickAtMs = 0L;
         this.fightStartMs = 0L;
         this.lastClickMs = 0L;
+        this.enabledAtMs = 0L;
     }
 
     @Override

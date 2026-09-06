@@ -7,11 +7,13 @@ import openskid.events.WindowClickEvent;
 import openskid.module.Module;
 import openskid.property.properties.BooleanProperty;
 import openskid.property.properties.IntProperty;
+import openskid.property.properties.ModeProperty;
 import openskid.util.ItemUtil;
 import openskid.util.TimerUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.inventory.ContainerPlayer;
+import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.WorldSettings.GameType;
 import org.apache.commons.lang3.RandomUtils;
@@ -25,6 +27,10 @@ public class InvManager extends Module {
     private int actionDelay = 0;
     private int oDelay = 0;
     private boolean inventoryOpen = false;
+    private int cleanPickup = -1;
+    private int cleanPlace = -1;
+    private boolean cleanReturning = false;
+    private ItemStack cleanPicked = null;
     private final TimerUtil autoArmorTime = new TimerUtil();
     public final IntProperty minDelay = new IntProperty("min-delay", 1, 0, 20);
     public final IntProperty maxDelay = new IntProperty("max-delay", 2, 0, 20);
@@ -62,6 +68,10 @@ public class InvManager extends Module {
 
     private void clickSlot(int windowId, int slotId, int mouseButtonClicked, int mode) {
         mc.playerController.windowClick(windowId, slotId, mouseButtonClicked, mode, mc.thePlayer);
+        if (this.invMode.getValue() == 2 && mc.thePlayer != null) {
+            mc.thePlayer.motionX = 0.0;
+            mc.thePlayer.motionZ = 0.0;
+        }
     }
 
     private int getStackSize(int slot) {
@@ -86,14 +96,23 @@ public class InvManager extends Module {
             if (this.oDelay > 0) {
                 this.oDelay--;
             }
-            if (!(mc.currentScreen instanceof GuiInventory)) {
+            boolean guiOpen = mc.currentScreen instanceof GuiInventory
+                    && ((GuiInventory) mc.currentScreen).inventorySlots instanceof ContainerPlayer;
+            boolean canManage = guiOpen || (this.invMode.getValue() == 2
+                    && (mc.currentScreen == null || guiOpen));
+            if (!canManage) {
                 this.inventoryOpen = false;
-            } else if (!(((GuiInventory) mc.currentScreen).inventorySlots instanceof ContainerPlayer)) {
-                this.inventoryOpen = false;
+                this.cleanPickup = -1;
+                this.cleanPlace = -1;
+                this.cleanReturning = false;
+                this.cleanPicked = null;
             } else {
                 if (!this.inventoryOpen) {
                     this.inventoryOpen = true;
                     this.oDelay = this.openDelay.getValue() + 1;
+                    if (!guiOpen) {
+                        this.oDelay = 0;
+                    }
                     this.autoArmorTime.reset();
                 }
                 if (this.oDelay <= 0 && this.actionDelay <= 0) {
@@ -212,6 +231,9 @@ public class InvManager extends Module {
                                 return;
                             }
                         }
+                        if (this.cleanSort.getValue() && this.doCleanSortStep()) {
+                            return;
+                        }
                         if (this.dropTrash.getValue()) {
                             int currentBlockCount = this.getStackSize(inventoryBlocksSlot);
                             int currentProjectileCount = this.getStackSize(inventoryProjectileSlot);
@@ -255,6 +277,9 @@ public class InvManager extends Module {
     @EventTarget
     public void onClick(WindowClickEvent event) {
         this.actionDelay = RandomUtils.nextInt(this.minDelay.getValue() + 1, this.maxDelay.getValue() + 2);
+        if (this.invMode.getValue() == 2) {
+            this.actionDelay += RandomUtils.nextInt(this.minDelay.getValue() + 1, this.maxDelay.getValue() + 2);
+        }
         if (this.humanize.getValue() && this.humanizeTicks.getValue() > 0) {
             this.actionDelay += RandomUtils.nextInt(0, this.humanizeTicks.getValue() + 1);
             if (Math.random() < 0.1) {
@@ -277,4 +302,96 @@ public class InvManager extends Module {
                 }
         }
     }
+
+    @Override
+    public void onDisabled() {
+        this.cleanPickup = -1;
+        this.cleanPlace = -1;
+        this.cleanReturning = false;
+        this.cleanPicked = null;
+    }
+
+    private boolean samePicked(ItemStack cursor) {
+        if (cursor == null || this.cleanPicked == null) return false;
+        if (cursor.getItem() == null || cursor.getItem() != this.cleanPicked.getItem()) return false;
+        return cursor.getItemDamage() == this.cleanPicked.getItemDamage();
+    }
+
+    private boolean areMergeable(ItemStack a, ItemStack b) {
+        if (a == null || b == null) return false;
+        if (a.getItem() == null || a.getItem() != b.getItem()) return false;
+        if (!a.isStackable() || !b.isStackable()) return false;
+        if (b.stackSize >= b.getMaxStackSize()) return false;
+        if (a.getItemDamage() != b.getItemDamage()) return false;
+        return ItemStack.areItemStackTagsEqual(a, b);
+    }
+
+    private boolean doCleanSortStep() {
+        ItemStack cursor = mc.thePlayer.inventory.getItemStack();
+        int windowId = mc.thePlayer.inventoryContainer.windowId;
+        if (cursor != null) {
+            if (this.cleanPlace == -1) {
+                return true;
+            }
+            if (!this.cleanReturning) {
+                ItemStack target = mc.thePlayer.inventory.getStackInSlot(this.cleanPlace);
+                boolean swappable = target != null && target.getItem() instanceof ItemArmor
+                        && cursor.getItem() instanceof ItemArmor;
+                if (!swappable && (target == null || !this.areMergeable(cursor, target))) {
+                    if (this.samePicked(cursor) && this.cleanPickup != -1) {
+                        this.clickSlot(windowId, this.convertSlotIndex(this.cleanPickup), 0, 0);
+                    }
+                    this.cleanPickup = -1;
+                    this.cleanPlace = -1;
+                    this.cleanReturning = false;
+                    this.cleanPicked = null;
+                    return true;
+                }
+                this.clickSlot(windowId, this.convertSlotIndex(this.cleanPlace), 0, 0);
+                this.cleanReturning = true;
+                return true;
+            }
+            this.clickSlot(windowId, this.convertSlotIndex(this.cleanPickup), 0, 0);
+            this.cleanPickup = -1;
+            this.cleanPlace = -1;
+            this.cleanReturning = false;
+            this.cleanPicked = null;
+            return true;
+        }
+        if (this.cleanReturning || this.cleanPlace != -1) {
+            this.cleanPickup = -1;
+            this.cleanPlace = -1;
+            this.cleanReturning = false;
+            this.cleanPicked = null;
+        }
+        for (int i = 9; i < 36; i++) {
+            ItemStack a = mc.thePlayer.inventory.getStackInSlot(i);
+            if (a == null) continue;
+            for (int j = i + 1; j < 36; j++) {
+                ItemStack b = mc.thePlayer.inventory.getStackInSlot(j);
+                if (b == null) continue;
+                if (this.areMergeable(a, b) || this.areMergeable(b, a)) {
+                    this.clickSlot(windowId, this.convertSlotIndex(i), 0, 0);
+                    this.cleanPickup = i;
+                    this.cleanPlace = j;
+                    this.cleanReturning = false;
+                    this.cleanPicked = a;
+                    return true;
+                }
+                if (a.getItem() instanceof ItemArmor && b.getItem() instanceof ItemArmor
+                        && ItemUtil.getArmorProtection(b) > ItemUtil.getArmorProtection(a)) {
+                    this.clickSlot(windowId, this.convertSlotIndex(i), 0, 0);
+                    this.cleanPickup = i;
+                    this.cleanPlace = j;
+                    this.cleanReturning = false;
+                    this.cleanPicked = a;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public final ModeProperty invMode = new ModeProperty("mode", 0, new String[]{"Basic", "OpenInv", "Hypixel"});
+    public final BooleanProperty cleanSort = new BooleanProperty("clean-sort", false);
 }

@@ -139,6 +139,11 @@ public class KillAura extends Module {
     public final IntProperty smoothAimH;
     public final IntProperty smoothAimV;
     public final BooleanProperty gapplePause;
+    public final BooleanProperty exhaustion;
+    public final FloatProperty exhaustionFloor;
+    public final IntProperty exhaustionSecs;
+    public final IntProperty dragBurst;
+    public final IntProperty dragGapMs;
     private final int[] clickPattern = {16, 22, 14, 46, 18, 8, 8, 63, 25, 25, 12, 39, 26, 18, 6, 62, 26, 18, 21, 40, 26, 8, 16, 46, 26, 20, 15, 50, 25, 10, 11, 43, 25, 11, 37, 39, 25, 12, 18, 54, 25, 25, 15, 41, 27, 9, 1, 66, 26, 17, 21, 48, 27, 8, 6, 62, 28, 19, 13, 47, 26, 7, 14, 53, 27, 16, 29, 38, 27, 8, 6, 60, 27, 22, 19, 45, 26, 10, 10, 62, 25, 20, 28, 22, 26, 19, 11, 57, 26, 16, 32, 36, 26, 9, 9, 66, 27, 19, 27, 38, 26, 9, 10, 61, 26, 25, 15, 34, 26, 20, 10, 52, 26, 22, 28, 29, 27, 8, 3, 63, 26, 21, 27, 38, 26, 10, 11, 38, 27, 15, 31, 39, 25, 13, 10, 45, 27, 14, 27, 40, 26, 10, 6, 51, 26, 18, 31, 27, 27, 11, 14, 47, 26, 23, 21, 35, 26, 12, 13, 41, 26, 15, 31, 36, 27, 16, 9, 44, 27, 14, 30, 39, 25, 14, 10, 46, 28, 10, 24, 45, 26, 7, 5, 46, 26, 20, 6, 50, 26, 8, 6, 51, 26, 17, 20, 40, 27, 25, 1, 32, 26, 20, 9, 46, 25, 15, 12, 30, 26, 11, 25, 46, 27, 13, 10, 36, 27, 20, 15, 41, 26, 8, 6, 41, 26, 12, 29, 44, 26, 13, 11, 44, 26, 12, 27, 36, 26, 23, 4, 39, 26, 24, 12, 47, 26, 9, 2, 65, 26, 16, 27, 34, 26, 25, 0, 53, 26, 16, 3, 47, 27, 16, 10, 41, 26, 18, 25, 38, 26, 11, 10, 50, 27, 20, 20, 29, 26, 11, 7, 66, 26, 20, 18, 31, 26, 21, 21, 28, 26, 21, 29, 25, 27, 15, 12, 43, 28, 11, 31, 32, 27, 23, 0, 49, 27, 20, 30, 30, 25, 32, 0, 50, 26, 12, 25, 34, 27, 11, 11, 44, 27, 23, 26, 25, 27, 16, 11, 46, 26, 13, 32, 35, 28, 9, 5, 48, 26, 21, 29, 37, 26, 10, 7, 48, 27, 20, 21, 41, 24, 7, 18, 46, 25, 22, 22, 33, 25, 10, 5, 59, 26, 21, 19, 29, 26, 11, 10, 46, 25, 22, 29, 31, 25, 11, 12, 50, 24, 20, 28, 40, 25, 10, 4, 56, 25, 16, 36, 30, 24, 10, 9, 63, 25, 22, 22, 32, 25, 9, 8, 58, 27, 10, 43, 30, 26, 8, 3, 60, 26, 24, 14, 42, 26, 12, 9, 49, 25, 11, 32, 38, 27, 8, 8, 50, 26, 20, 26, 32, 25, 10, 4, 66, 25, 18, 28, 24, 26, 10, 8, 54, 25, 16, 32, 34, 24, 9, 12, 54, 25, 18, 18, 41, 28, 9, 16, 50, 28, 15, 21, 46, 27, 9, 8, 49, 26, 21, 18, 36, 26, 15, 10, 54, 27, 22, 27, 32, 25, 9, 15, 48, 28, 19, 26, 35, 27, 9, 13, 48, 25, 21, 23, 33, 27, 8, 3, 65, 26, 19, 23, 39, 25, 9, 13, 44, 26, 25, 19, 35, 26, 14, 6, 63, 27, 15, 23, 32, 28, 8, 2, 65, 26, 19, 24, 34, 27, 12, 0, 49, 26, 21, 34, 34, 26, 8, 9, 60, 26, 23, 19, 34, 26, 10, 5, 59, 26, 12, 36, 39, 26, 11, 11, 44, 26, 25, 5, 47, 25, 9, 10, 49, 27, 19, 24, 31, 26, 10, 4, 60, 27, 25, 9, 41, 26, 20, 7, 54, 24, 11, 35, 35, 26, 9, 5, 67, 26, 17, 19, 43, 26, 24, 17, 39, 25, 16, 11, 45, 25, 9, 3, 60, 25, 25, 16, 37, 28, 9, 5, 55, 26, 15, 12, 49, 25, 17, 8, 39, 25, 15, 16, 48, 25, 12, 9, 37, 25, 17, 31, 38, 27, 8, 8, 62, 26, 23, 14, 38, 27, 16, 10, 45, 26, 13, 25, 42, 25, 9, 8, 57, 27, 12, 36, 38, 27, 13, 11, 30, 27, 21, 24, 47, 25, 10, 6, 54, 26, 13, 28, 42, 25, 10, 5, 47, 26, 21, 22, 44, 26, 10, 8, 50, 28, 17, 26, 33, 26, 10, 14, 55, 27, 14, 30, 29, 25, 13, 1, 70, 26, 14, 30, 26, 27, 12, 14, 67, 25, 21, 4, 33, 25, 11, 5, 48, 26, 21, 21, 39, 25, 11, 1, 55, 26, 11, 29, 32, 26, 12, 10, 50, 27, 16, 26, 36, 27, 23, 3, 57, 27, 11, 23, 37, 26, 9, 16, 37, 26, 16, 38, 37, 26, 9, 2, 60, 27, 22, 16, 38, 27, 9, 5, 53, 26, 14, 33, 30, 25, 13, 11, 46, 25, 23, 22, 43, 24, 10, 13, 51, 25, 21, 25, 35, 27, 8, 16, 48, 25, 21, 19, 42, 25, 12, 12, 49, 26, 21, 18, 42, 25, 12, 13, 51, 27, 16, 25, 37, 26, 11, 12, 47, 27, 21, 13, 39, 27, 5, 9, 61, 25, 24, 11, 39, 26, 10, 9, 52, 26, 15, 33, 28, 38, 0, 9, 55, 26, 14, 39, 24, 25, 10, 9, 52, 27, 13, 29, 36, 25, 12, 9, 49, 25, 22, 30, 26, 26, 10, 2, 66, 27, 17, 30, 31, 26, 14, 7, 64, 28, 16, 31, 28, 24, 13, 14, 54, 25, 12, 29, 35, 27, 10, 8, 49, 27, 18, 26, 38, 25, 8, 14, 46, 26, 23, 15, 36, 26, 11, 5, 61, 27, 23, 8, 42, 25, 9, 10, 57, 26, 11, 29, 37, 25, 11, 9, 56, 27, 11, 32, 35, 26, 12, 6, 62, 27, 20, 33, 27, 27, 10, 14, 50, 27, 17, 28, 40, 25, 9, 8, 46, 26, 23, 16, 44, 26, 11, 13, 47, 28, 19, 19, 36, 26, 8, 7, 55, 26, 15, 24, 39, 26, 12, 9, 56, 26, 15, 28, 36, 25, 10, 10, 51, 25, 17, 32, 36, 25, 9, 7, 58, 26, 11, 31, 32, 26, 7, 14, 57, 26, 13, 22, 25, 24, 9, 14, 42, 26, 12, 27, 31, 25, 9, 2, 62, 27, 23, 12, 33, 26, 8, 18, 46, 25, 24, 14, 33, 24, 10, 14, 50, 25, 20, 21, 38, 26, 9, 1, 61, 25, 11, 30, 35, 26, 10, 10, 53, 25, 18, 22, 35, 25, 8, 4, 44, 25, 25, 21, 37, 24, 13, 6, 35, 27, 11, 34, 32, 25, 9, 10, 51, 26, 17, 18, 31, 24, 11, 8, 53, 26, 16, 30, 35, 26, 8, 10, 60, 25, 11, 32, 29, 25, 22, 2, 53, 26, 16, 30, 33, 27, 9, 11, 57, 25, 13, 32, 30, 25, 14, 10, 67, 24, 21, 29, 35, 27, 8, 12, 70, 26, 14, 19, 42, 27, 22, 0, 57, 27, 12, 31, 33, 25, 9, 12, 62, 27, 23, 14, 43, 25, 11, 2, 71, 28, 12, 33, 31, 27, 8, 12, 71, 26, 15, 23, 42, 28, 9, 8, 63, 26, 22, 22, 37, 27, 7, 4, 78, 27, 20, 26, 34, 25, 9, 15, 64, 27, 21, 23, 32, 26, 12, 11, 77, 25, 11, 32, 29, 26, 9, 15, 63, 27, 19, 23, 38, 26, 10, 15, 57, 26, 14, 37, 14, 26, 18, 6, 67, 26, 13, 31, 33, 26, 19, 1, 60, 27, 25, 22, 24, 27, 22, 2, 55, 26, 13, 25, 34, 26, 24, 0, 68, 25, 20, 22, 31, 25, 11, 4, 80, 24, 22, 22, 29, 26, 16, 8, 81, 25, 11, 22, 38, 27, 10, 11, 50, 27, 18, 35, 32, 26, 10, 5, 76, 26, 23, 22, 30, 24, 21, 8, 67, 27, 24, 16, 42, 27, 8, 3};
     private final TimerUtil timer = new TimerUtil();
     private final Random random = new Random();
@@ -159,13 +164,17 @@ public class KillAura extends Module {
     int blockTick = 0;
     private int lastTickProcessed;
     private long lastRotationUpdateTime = 0;
+    private long exhaustionFightStartMs = 0L;
+    private long lastAttackLandedMs = 0L;
+    private int dragLeft = 0;
+    private long dragRestUntilMs = 0L;
 
     public KillAura() {
         super("KillAura", false, false, "Automatically attacks nearby enemies with aim assist.");
         this.lastTickProcessed = 0;
 
         // 新增CPS模式属性
-        this.cpsMode = new ModeProperty("CPS Mode", 0, new String[]{"Normal", "Record"});
+        this.cpsMode = new ModeProperty("CPS Mode", 0, new String[]{"Normal", "Record", "DragClick"});
 
         this.mode = new ModeProperty("Mode", 1, new String[]{"Single", "Switch"});
         this.sort = new ModeProperty("Sort", 1, new String[]{"Distance", "Health", "HurtTime", "FOV", "Threat"});
@@ -242,6 +251,11 @@ public class KillAura extends Module {
         this.smoothAimH = new IntProperty("SmoothAimH", 90, 1, 180, () -> this.smoothAimEnable.getValue());
         this.smoothAimV = new IntProperty("SmoothAimV", 90, 1, 180, () -> this.smoothAimEnable.getValue());
         this.gapplePause = new BooleanProperty("PauseOnGapple", true);
+        this.exhaustion = new BooleanProperty("Exhaustion", false);
+        this.exhaustionFloor = new FloatProperty("ExhaustionFloor", 0.75F, 0.5F, 1.0F, this.exhaustion::getValue);
+        this.exhaustionSecs = new IntProperty("ExhaustionSecs", 120, 30, 600, this.exhaustion::getValue);
+        this.dragBurst = new IntProperty("DragBurst", 18, 1, 50, () -> this.cpsMode.getValue() == 2);
+        this.dragGapMs = new IntProperty("DragGapMs", 300, 0, 1000, () -> this.cpsMode.getValue() == 2);
     }
 
     private long getAttackDelay() {
@@ -253,12 +267,60 @@ public class KillAura extends Module {
                     patternIndex = 0;
                 }
                 return clickPattern[patternIndex];
+            } else if (this.cpsMode.getValue() == 2) {
+                return getDragClickDelay();
             } else {
                 long min = Math.min(this.minCPS.getValue(), this.maxCPS.getValue());
                 long max = Math.max(this.minCPS.getValue(), this.maxCPS.getValue());
-                return 1000L / RandomUtil.nextLong(min, max);
+                return (long) ((1000L / RandomUtil.nextLong(min, max)) / exhaustionMultiplier());
             }
         }
+    }
+
+    // Exhaustion sags effective CPS the longer a fight runs, then recovers
+    // after 5s without landed hits. Adapted from AutoClicker fatigue and the
+    // donor exhaustion CPS swap. Default off so old timing is unchanged.
+    private double exhaustionMultiplier() {
+        if (!this.exhaustion.getValue()) {
+            return 1.0;
+        }
+        long now = System.currentTimeMillis();
+        if (now - this.lastAttackLandedMs > 5000L) {
+            this.exhaustionFightStartMs = now;
+            return 1.0;
+        }
+        if (this.exhaustionFightStartMs == 0L) {
+            this.exhaustionFightStartMs = now;
+            return 1.0;
+        }
+        double sag = (double) (now - this.exhaustionFightStartMs) / 1000.0 / (double) this.exhaustionSecs.getValue();
+        if (sag > 1.0) {
+            sag = 1.0;
+        }
+        return 1.0 - sag * (1.0 - (double) this.exhaustionFloor.getValue());
+    }
+
+    // DragClick staging: dense bursts of clicks separated by short rests.
+    // Adapted from donor DragClickAutoClicker burst/pause rhythm, expressed in
+    // ms delays to fit the existing attack-delay pipeline.
+    private long getDragClickDelay() {
+        long now = System.currentTimeMillis();
+        if (now < this.dragRestUntilMs) {
+            return Math.max(50L, this.dragRestUntilMs - now);
+        }
+        if (this.dragLeft <= 0) {
+            this.dragLeft = Math.max(1, this.dragBurst.getValue() + RandomUtil.nextInt(-2, 2));
+        }
+        this.dragLeft--;
+        if (this.dragLeft <= 0) {
+            this.dragRestUntilMs = now + (long) this.dragGapMs.getValue() + RandomUtil.nextInt(0, 60);
+        }
+        if (Math.random() < 0.95) {
+            return 35L + RandomUtil.nextInt(0, 15);
+        }
+        long min = Math.min(this.minCPS.getValue(), this.maxCPS.getValue());
+        long max = Math.max(this.minCPS.getValue(), this.maxCPS.getValue());
+        return 1000L / RandomUtil.nextLong(min, max);
     }
 
     private boolean performAttack(float yaw, float pitch) {
@@ -307,6 +369,7 @@ public class KillAura extends Module {
                     PlayerUtil.attackEntity(this.target.getEntity());
                 }
                 this.hitRegistered = true;
+                this.lastAttackLandedMs = System.currentTimeMillis();
                 return true;
             }
         } else {
@@ -1691,6 +1754,10 @@ public class KillAura extends Module {
             this.isSmoothBacking = false;
             this.lastRotationUpdateTime = 0;
             this.patternIndex = 0;
+            this.exhaustionFightStartMs = 0L;
+            this.lastAttackLandedMs = 0L;
+            this.dragLeft = 0;
+            this.dragRestUntilMs = 0L;
         }
     }
 
@@ -1711,6 +1778,10 @@ public class KillAura extends Module {
         this.fakeBlockState = false;
         this.wantsToDisable = false;
         this.currentAimVec = null;
+        this.exhaustionFightStartMs = 0L;
+        this.lastAttackLandedMs = 0L;
+        this.dragLeft = 0;
+        this.dragRestUntilMs = 0L;
     }
 
     @Override

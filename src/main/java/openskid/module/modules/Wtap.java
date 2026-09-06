@@ -37,6 +37,10 @@ public class Wtap extends Module {
     private final BooleanProperty notWhenHurt = new BooleanProperty("not-when-hurt", true, () -> this.mode.getValue() == 1);
     private final BooleanProperty playersOnly = new BooleanProperty("players-only", true, () -> this.mode.getValue() == 2);
     private final IntProperty reSprintDelay = new IntProperty("re-sprint-delay", 2, 0, 9, () -> this.mode.getValue() == 2);
+    private final IntProperty releaseDelayMs = new IntProperty("release-delay", 0, 0, 1000, () -> this.mode.getValue() == 0);
+    private final IntProperty repressDelayMs = new IntProperty("repress-delay", 0, 0, 1000, () -> this.mode.getValue() == 0);
+    private final PercentProperty jumpResetChance = new PercentProperty("jump-reset-chance", 70, () -> this.mode.getValue() == 0);
+    private long lastWtapMs = 0L;
     private EntityLivingBase lastTarget;
     private long lastAttackTime;
     private int attackSelfHurtTime;
@@ -117,10 +121,19 @@ public class Wtap extends Module {
                     && this.mode.getValue() == 0
                     && this.timer.hasTimeElapsed(500L)
                     && mc.thePlayer.isSprinting()) {
+                // Repress delay is the minimum gap between resets, adapted from
+                // raven delay-between-reset. Release delay pushes the forward
+                // stop later, adapted from raven delay-until-reset. Both default
+                // to 0 so old timing is unchanged.
+                long now = System.currentTimeMillis();
+                if (now - this.lastWtapMs < (long) this.repressDelayMs.getValue()) {
+                    return;
+                }
+                this.lastWtapMs = now;
                 this.timer.reset();
                 this.active = true;
                 this.stopForward = false;
-                this.delayTicks = this.delayTicks + (long) (50.0F * this.delay.getValue());
+                this.delayTicks = this.delayTicks + (long) (50.0F * this.delay.getValue()) + (long) this.releaseDelayMs.getValue();
                 this.durationTicks = this.durationTicks + (long) (50.0F * this.duration.getValue());
             }
         }
@@ -134,6 +147,16 @@ public class Wtap extends Module {
         // Ported from raven SimpleSprintReset.java (chance gate on attack).
         if (this.mode.getValue() != 0 && RandomUtil.nextInt(1, 100) > this.chance.getValue()) {
             return;
+        }
+        // Jump reset hops on hit for extra KB, with a chance gate so some hits
+        // skip the jump for a legit look. Adapted from donor jump-reset chance.
+        if (this.mode.getValue() == 0
+                && this.jumpResetChance.getValue() > 0
+                && mc.thePlayer.onGround
+                && !mc.thePlayer.isInWater()
+                && !mc.thePlayer.isOnLadder()
+                && RandomUtil.nextInt(1, 100) <= this.jumpResetChance.getValue()) {
+            mc.thePlayer.jump();
         }
         if (this.mode.getValue() == 1) {
             this.lastTarget = (EntityLivingBase) event.getTarget();
@@ -242,6 +265,7 @@ public class Wtap extends Module {
         this.reSprintTimer.reset();
         this.resyncNeeded = false;
         this.nextSprintTime = 0;
+        this.lastWtapMs = 0L;
     }
 
     @Override

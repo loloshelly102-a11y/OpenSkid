@@ -49,7 +49,7 @@ public class Scaffold extends Module {
     public final FloatProperty tellynormalrotationminspeed = new FloatProperty("telly-normal-rotation-min-speed", 30.0F, 1.0F, 180.0F, () -> this.keepY.getValue() == 3 || this.keepY.getValue() == 4);
     public final FloatProperty tellynormalrotationmaxspeed = new FloatProperty("telly-normal-rotation-max-speed", 35.0F, 1.0F, 180.0F, () -> this.keepY.getValue() == 3 || this.keepY.getValue() == 4);
     public final ModeProperty moveFix = new ModeProperty("move-fix", 1, new String[]{"NONE", "SILENT"});
-    public final ModeProperty sprintMode = new ModeProperty("sprint", 0, new String[]{"NONE", "VANILLA"});
+    public final ModeProperty sprintMode = new ModeProperty("sprint", 0, new String[]{"NONE", "VANILLA", "HYPIXELBETA", "OLDINTAVE", "OFFGROUND", "ONGROUND"});
     public final PercentProperty groundMotion = new PercentProperty("ground-motion", 100);
     public final PercentProperty airMotion = new PercentProperty("air-motion", 100);
     public final PercentProperty speedMotion = new PercentProperty("speed-motion", 100);
@@ -75,6 +75,7 @@ public class Scaffold extends Module {
     public final IntProperty blocksPerSneak = new IntProperty("blocks-per-sneak", 1, 1, 5, () -> this.eagle.getValue());
     public final BooleanProperty espOutline = new BooleanProperty("outline-esp", false);
     public final ModeProperty espColor = new ModeProperty("outline-color", 0, new String[]{"Default", "HUD"}, () -> this.espOutline.getValue());
+    public final BooleanProperty strafeCorrection = new BooleanProperty("strafe-correction", false);
 
     private boolean shouldStopSprint() {
         if (this.isThreeFmcMode() && !this.isThreeFmcTellyMode()) {
@@ -85,6 +86,28 @@ public class Scaffold extends Module {
         } else {
             boolean stage = this.keepY.getValue() == 1 || this.keepY.getValue() == 2 || this.keepY.getValue() == 4;
             return (!stage || this.session.stage <= 0) && this.sprintMode.getValue() == 0;
+        }
+    }
+
+    private void applySprintSpoof() {
+        int m = this.sprintMode.getValue();
+        if (m <= 1 || mc.thePlayer == null) return;
+        if (!this.session.placedThisTick) return;
+        switch (m) {
+            case 2:
+                mc.thePlayer.setSprinting(false);
+                break;
+            case 3:
+                if (mc.thePlayer.onGround) mc.thePlayer.setSprinting(false);
+                break;
+            case 4:
+                mc.thePlayer.setSprinting(!mc.thePlayer.onGround);
+                break;
+            case 5:
+                mc.thePlayer.setSprinting(mc.thePlayer.onGround);
+                break;
+            default:
+                break;
         }
     }
 
@@ -602,6 +625,9 @@ public class Scaffold extends Module {
                     && MoveUtil.isForwardPressed()) {
                 MoveUtil.fixStrafe(RotationState.getSmoothedYaw());
             }
+            if (this.strafeCorrection.getValue() && this.session.placedThisTick && MoveUtil.isMoving()) {
+                MoveUtil.fixStrafe(this.session.yaw);
+            }
             if (mc.thePlayer.onGround && this.session.stage > 0 && MoveUtil.isForwardPressed()) {
                 mc.thePlayer.movementInput.jump = true;
             }
@@ -635,6 +661,7 @@ public class Scaffold extends Module {
             if (this.shouldStopSprint()) {
                 mc.thePlayer.setSprinting(false);
             }
+            this.applySprintSpoof();
 
             if (this.safe.getValue() && this.tower.getValue() == 3 && mc.gameSettings.keyBindJump.isKeyDown()) {
                 float moveYaw = this.getCurrentYaw();

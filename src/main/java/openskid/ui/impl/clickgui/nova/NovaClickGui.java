@@ -49,7 +49,7 @@ public class NovaClickGui extends GuiScreen {
     private static final Set<String> MOVEMENT = set(
             "AntiAFK", "Fly", "FastBow", "Speed", "LongJump", "Sprint", "SafeWalk", "Jesus", "Blink", "NoFall",
             "NoSlow", "KeepSprint", "NoJumpDelay", "AntiVoid", "Timer", "BridgeAssist", "Clutch", "WaterClutch", "PearlSaver",
-            "LadderClutch", "Phase", "Step", "Freecam", "Spider", "Tower", "NoClickDelay", "NoWeb", "Parkour");
+            "LadderClutch", "Phase", "Step", "Freecam", "Spider", "Tower", "NoClickDelay", "VClip", "StopMotion", "NoWeb", "Parkour");
     private static final Set<String> RENDER = set(
             "ESP", "Chams", "FullBright", "Tracers", "NameTags", "Xray", "TargetESP", "TargetHUD", "Indicators",
             "BedESP", "ItemESP", "BreakProgress", "ViewClip", "NoHurtCam", "HUD", "Notifications", "CardClickGUI",
@@ -62,7 +62,7 @@ public class NovaClickGui extends GuiScreen {
             "AutoHeal", "FakeLag", "AutoTool", "ChestStealer", "AutoBedDef", "InvManager", "InvWalk", "Scaffold",
             "AutoBlockIn", "AutoSwap", "AutoArmor", "AutoPot", "AutoSoup", "AutoWeapon", "SpeedMine", "FastPlace", "GhostHand", "MCF", "AntiDebuff", "FlagDetector",
             "AutoGapple", "ChestAura", "AutoHeadHitter", "ThrowAura", "AutoAuth", "BedDefender", "Nuker", "AutoPlace", "LegitScaffold", "BlockLadder", "AutoBed",
-            "AutoRespawn", "ModSpoofer", "ExploitFixer", "AntiFalseFlag", "GhostBlock", "PingSpoof");
+            "AutoRespawn", "ModSpoofer", "ExploitFixer", "AntiFalseFlag", "GhostBlock", "PingSpoof", "FastUse", "DelayRemover");
     private static final Set<String> MISC = set(
             "StaffDetector", "MurderDetector", "BedProximityAlert", "CheatDetector",
             "AutoPlay", "AutoGG", "AutoReconnect", "Panic", "KillSults",

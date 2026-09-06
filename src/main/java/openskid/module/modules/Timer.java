@@ -19,8 +19,12 @@ public class Timer extends Module {
     public final FloatProperty hopSpeed = new FloatProperty("hop-speed", 1.5F, 0.1F, 3.0F, () -> timerMode.getValue() == 1);
     public final FloatProperty balanceSpeed = new FloatProperty("balance-speed", 0.5F, 0.1F, 1.0F, () -> timerMode.getValue() == 2);
     public final IntProperty balanceInterval = new IntProperty("balance-interval", 5, 1, 20, () -> timerMode.getValue() == 2);
+    public final FloatProperty minSpeed = new FloatProperty("min-speed", 1.0F, 0.01F, 10.0F);
+    public final FloatProperty maxSpeed = new FloatProperty("max-speed", 1.0F, 0.01F, 10.0F);
 
     private int timerTicks = 0;
+    private int randomTicks = 0;
+    private float randomizedSpeed = 1.0F;
 
     public Timer() {
         super("Timer", false, false, "Changes client timer speed to move faster.");
@@ -29,11 +33,15 @@ public class Timer extends Module {
     @Override
     public void onEnabled() {
         this.timerTicks = 0;
+        this.randomTicks = 0;
+        this.randomizedSpeed = this.speed.getValue();
     }
 
     @Override
     public void onDisabled() {
         this.timerTicks = 0;
+        this.randomTicks = 0;
+        this.randomizedSpeed = this.speed.getValue();
         net.minecraft.util.Timer timer = ((IAccessorMinecraft) mc).getTimer();
         if (timer != null) {
             timer.timerSpeed = 1.0F;
@@ -46,18 +54,30 @@ public class Timer extends Module {
             return;
         }
 
+        this.randomTicks++;
+        if (this.randomTicks >= 20) {
+            this.randomTicks = 0;
+            float lo = Math.min(this.minSpeed.getValue(), this.maxSpeed.getValue());
+            float hi = Math.max(this.minSpeed.getValue(), this.maxSpeed.getValue());
+            if (Math.abs(hi - lo) < 1.0E-6F) {
+                this.randomizedSpeed = this.speed.getValue();
+            } else {
+                this.randomizedSpeed = (float) (lo + Math.random() * (hi - lo));
+            }
+        }
+
         net.minecraft.util.Timer timer = ((IAccessorMinecraft) mc).getTimer();
         if (timer != null) {
             // Ported from Raven GrimBoatLongJump timer-balance idea: hop and balance variants.
             if (this.timerMode.getValue() == 1 && mc.thePlayer != null) {
-                timer.timerSpeed = mc.thePlayer.onGround ? this.speed.getValue() : this.hopSpeed.getValue();
+                timer.timerSpeed = mc.thePlayer.onGround ? this.randomizedSpeed : this.hopSpeed.getValue();
             } else if (this.timerMode.getValue() == 2) {
                 this.timerTicks++;
                 int interval = this.balanceInterval.getValue();
                 timer.timerSpeed = (this.timerTicks % (interval * 2)) < interval
                         ? this.balanceSpeed.getValue() : 1.0F;
             } else {
-                timer.timerSpeed = this.speed.getValue();
+                timer.timerSpeed = this.randomizedSpeed;
             }
         }
     }

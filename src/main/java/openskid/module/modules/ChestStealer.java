@@ -9,6 +9,7 @@ import openskid.mixin.IAccessorItemSword;
 import openskid.module.Module;
 import openskid.util.ChatUtil;
 import openskid.util.ItemUtil;
+import openskid.util.MoveUtil;
 import openskid.property.properties.BooleanProperty;
 import openskid.property.properties.IntProperty;
 import net.minecraft.client.Minecraft;
@@ -23,12 +24,18 @@ import net.minecraft.item.*;
 import net.minecraft.world.WorldSettings.GameType;
 import org.apache.commons.lang3.RandomUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class ChestStealer extends Module {
     private static final Minecraft mc = Minecraft.getMinecraft();
     private int clickDelay = 0;
     private int oDelay = 0;
     private boolean inChest = false;
     private boolean warnedFull = false;
+    private long chestOpenMs = 0L;
+    private long emptySinceMs = 0L;
     public final IntProperty minDelay = new IntProperty("min-delay", 1, 0, 20);
     public final IntProperty maxDelay = new IntProperty("max-delay", 2, 0, 20);
     public final IntProperty openDelay = new IntProperty("open-delay", 1, 0, 20);
@@ -84,6 +91,7 @@ public class ChestStealer extends Module {
     }
 
     private void shiftClick(int windowId, int slotId) {
+        this.emptySinceMs = 0L;
         mc.playerController.windowClick(windowId, slotId, 0, 1, mc.thePlayer);
     }
 
@@ -111,9 +119,17 @@ public class ChestStealer extends Module {
                         this.inChest = true;
                         this.warnedFull = false;
                         this.oDelay = this.openDelay.getValue() + 1;
+                        this.chestOpenMs = System.currentTimeMillis();
+                        this.emptySinceMs = 0L;
                     }
                     if (this.oDelay <= 0 && this.clickDelay <= 0) {
                         if (this.isEnabled() && this.isValidGameMode()) {
+                            if (this.notMoving.getValue() && mc.thePlayer != null && MoveUtil.isMoving()) {
+                                return;
+                            }
+                            if (this.startDelay.getValue() > 0 && System.currentTimeMillis() - this.chestOpenMs < (long) this.startDelay.getValue()) {
+                                return;
+                            }
                             IInventory inventory = ((ContainerChest) container).getLowerChestInventory();
                             if (this.HypixelMode.getValue()) {
                                 String inventoryName = inventory.getName();
@@ -134,10 +150,14 @@ public class ChestStealer extends Module {
                                     ChatUtil.sendFormatted(String.format("%s%s: &cYour inventory is full!&r", OpenSkid.clientName, this.getName()));
                                     this.warnedFull = true;
                                 }
-                                if (this.autoClose.getValue()) {
+                                if (this.autoClose.getValue() && this.closeGatePassed()) {
                                     mc.thePlayer.closeScreen();
                                 }
                             } else {
+                                if (this.shuffle.getValue()) {
+                                    this.stealShuffled(container, inventory);
+                                    return;
+                                }
                                 if (this.skipTrash.getValue()) {
                                     int bestSword = -1;
                                     double bestDamage = 0.0;
@@ -245,7 +265,7 @@ public class ChestStealer extends Module {
                                         }
                                     }
                                 }
-                                if (this.autoClose.getValue()) {
+                                if (this.autoClose.getValue() && this.closeGatePassed()) {
                                     mc.thePlayer.closeScreen();
                                 }
                             }
@@ -254,6 +274,135 @@ public class ChestStealer extends Module {
                 }
             }
         }
+    }
+
+    private boolean closeGatePassed() {
+        int waitMs = this.closeDelay.getValue();
+        if (waitMs <= 0) return true;
+        long now = System.currentTimeMillis();
+        if (this.emptySinceMs == 0L) {
+            this.emptySinceMs = now;
+            return false;
+        }
+        return now - this.emptySinceMs >= (long) waitMs;
+    }
+
+    private void addShuffleSlot(List<Integer> out, int slot) {
+        if (slot >= 0 && !out.contains(slot)) {
+            out.add(slot);
+        }
+    }
+
+    private void stealShuffled(Container container, IInventory inventory) {
+        ArrayList<Integer> candidates = new ArrayList<>();
+        if (this.skipTrash.getValue()) {
+            int bestSword = -1;
+            double bestDamage = 0.0;
+            int[] bestArmorSlots = new int[]{-1, -1, -1, -1};
+            double[] bestArmorProtection = new double[]{0.0, 0.0, 0.0, 0.0};
+            int bestPickaxeSlot = -1;
+            float bestPickaxeEfficiency = 1.0F;
+            int bestShovelSlot = -1;
+            float bestShovelEfficiency = 1.0F;
+            int bestAxeSlot = -1;
+            float bestAxeEfficiency = 1.0F;
+            int bestBow = -1;
+            double bestBowDamage = 0.0;
+            for (int i = 0; i < inventory.getSizeInventory(); i++) {
+                if (container.getSlot(i).getHasStack()) {
+                    ItemStack stack = container.getSlot(i).getStack();
+                    Item item = stack.getItem();
+                    if (item instanceof ItemSword) {
+                        double damage = ItemUtil.getAttackBonus(stack);
+                        if (bestSword == -1 || damage > bestDamage) {
+                            bestSword = i;
+                            bestDamage = damage;
+                        }
+                    } else if (item instanceof ItemArmor) {
+                        int armorType = ((ItemArmor) item).armorType;
+                        double protectionLevel = ItemUtil.getArmorProtection(stack);
+                        if (bestArmorSlots[armorType] == -1 || protectionLevel > bestArmorProtection[armorType]) {
+                            bestArmorSlots[armorType] = i;
+                            bestArmorProtection[armorType] = protectionLevel;
+                        }
+                    } else if (item instanceof ItemPickaxe) {
+                        float efficiency = ItemUtil.getToolEfficiency(stack);
+                        if (bestPickaxeSlot == -1 || efficiency > bestPickaxeEfficiency) {
+                            bestPickaxeSlot = i;
+                            bestPickaxeEfficiency = efficiency;
+                        }
+                    } else if (item instanceof ItemSpade) {
+                        float efficiency = ItemUtil.getToolEfficiency(stack);
+                        if (bestShovelSlot == -1 || efficiency > bestShovelEfficiency) {
+                            bestShovelSlot = i;
+                            bestShovelEfficiency = efficiency;
+                        }
+                    } else if (item instanceof ItemAxe) {
+                        float efficiency = ItemUtil.getToolEfficiency(stack);
+                        if (bestAxeSlot == -1 || efficiency > bestAxeEfficiency) {
+                            bestAxeSlot = i;
+                            bestAxeEfficiency = efficiency;
+                        }
+                    } else if (item instanceof ItemBow) {
+                        double damage = ItemUtil.getBowAttackBonus(stack);
+                        if (bestBow == -1 || damage > bestBowDamage) {
+                            bestBow = i;
+                            bestBowDamage = damage;
+                        }
+                    }
+                }
+            }
+            int swordInInventorySlot = ItemUtil.findSwordInInventorySlot(0, true);
+            double damage = swordInInventorySlot != -1 ? ItemUtil.getAttackBonus(mc.thePlayer.inventory.getStackInSlot(swordInInventorySlot)) : 0.0;
+            if (bestSword != -1 && bestDamage > damage) {
+                this.addShuffleSlot(candidates, bestSword);
+            }
+            for (int i = 0; i < 4; i++) {
+                int slot = ItemUtil.findArmorInventorySlot(i, true);
+                double protectionLevel = slot != -1
+                        ? ItemUtil.getArmorProtection(mc.thePlayer.inventory.getStackInSlot(slot))
+                        : 0.0;
+                if (bestArmorSlots[i] != -1 && bestArmorProtection[i] > protectionLevel) {
+                    this.addShuffleSlot(candidates, bestArmorSlots[i]);
+                }
+            }
+            int pickaxeSlot = ItemUtil.findInventorySlot("pickaxe", 0, true);
+            float pickaxeEfficiency = pickaxeSlot != -1 ? ItemUtil.getToolEfficiency(mc.thePlayer.inventory.getStackInSlot(pickaxeSlot)) : 1.0F;
+            if (bestPickaxeSlot != -1 && bestPickaxeEfficiency > pickaxeEfficiency) {
+                this.addShuffleSlot(candidates, bestPickaxeSlot);
+            }
+            int shovelSlot = ItemUtil.findInventorySlot("shovel", 0, true);
+            float shovelEfficiency = shovelSlot != -1 ? ItemUtil.getToolEfficiency(mc.thePlayer.inventory.getStackInSlot(shovelSlot)) : 1.0F;
+            if (bestShovelSlot != -1 && bestShovelEfficiency > shovelEfficiency) {
+                this.addShuffleSlot(candidates, bestShovelSlot);
+            }
+            int axeSlot = ItemUtil.findInventorySlot("axe", 0, true);
+            float efficiency = axeSlot != -1 ? ItemUtil.getToolEfficiency(mc.thePlayer.inventory.getStackInSlot(axeSlot)) : 1.0F;
+            if (bestAxeSlot != -1 && bestAxeEfficiency > efficiency) {
+                this.addShuffleSlot(candidates, bestAxeSlot);
+            }
+            int bowSlot = ItemUtil.findBowInventorySlot(0, true);
+            double bowDamage = bowSlot != -1 ? ItemUtil.getBowAttackBonus(mc.thePlayer.inventory.getStackInSlot(bowSlot)) : 0.0;
+            if (bestBow != -1 && bestBowDamage > bowDamage) {
+                this.addShuffleSlot(candidates, bestBow);
+            }
+        }
+        for (int i = 0; i < inventory.getSizeInventory(); i++) {
+            if (container.getSlot(i).getHasStack()) {
+                ItemStack stack = container.getSlot(i).getStack();
+                if (!this.skipTrash.getValue() || !ItemUtil.isNotSpecialItem(stack) || isMoreArmor(stack) || isMoreSword(stack) || isInvManagerRequire(stack)) {
+                    this.addShuffleSlot(candidates, i);
+                }
+            }
+        }
+        if (candidates.isEmpty()) {
+            if (this.autoClose.getValue() && this.closeGatePassed()) {
+                mc.thePlayer.closeScreen();
+            }
+            return;
+        }
+        Collections.shuffle(candidates);
+        this.shiftClick(container.windowId, candidates.get(0));
     }
 
     @EventTarget
@@ -281,4 +430,9 @@ public class ChestStealer extends Module {
                 }
         }
     }
+
+    public final BooleanProperty shuffle = new BooleanProperty("shuffle", false);
+    public final BooleanProperty notMoving = new BooleanProperty("not-moving", false);
+    public final IntProperty startDelay = new IntProperty("start-delay", 0, 0, 2000);
+    public final IntProperty closeDelay = new IntProperty("close-delay", 0, 0, 2000);
 }

@@ -8,6 +8,7 @@ import openskid.events.Render2DEvent;
 import openskid.events.Render3DEvent;
 import openskid.events.ResizeEvent;
 import openskid.mixin.IAccessorEntityRenderer;
+import openskid.mixin.IAccessorMinecraft;
 import openskid.mixin.IAccessorRenderManager;
 import openskid.module.Module;
 import openskid.util.ColorUtil;
@@ -37,9 +38,9 @@ public class ESP extends Module {
     private Framebuffer framebuffer = null;
     private boolean outline = true;
     private boolean glow = true;
-    public final ModeProperty mode = new ModeProperty("mode", 2, new String[]{"NONE", "2D", "3D", "OUTLINE", "FAKECORNER", "FAKE2D", "GLOW"});
+    public final ModeProperty mode = new ModeProperty("mode", 2, new String[]{"NONE", "2D", "3D", "OUTLINE", "FAKECORNER", "FAKE2D", "GLOW", "RING", "SHADED"});
     public final ModeProperty color = new ModeProperty("color", 0, new String[]{"DEFAULT", "TEAMS", "HUD"});
-    public final ModeProperty healthBar = new ModeProperty("health-bar", 0, new String[]{"NONE", "2D", "RAVEN"});
+    public final ModeProperty healthBar = new ModeProperty("health-bar", 0, new String[]{"NONE", "2D", "SKID"});
     public final BooleanProperty players = new BooleanProperty("players", true);
     public final BooleanProperty friends = new BooleanProperty("friends", true);
     public final BooleanProperty enemies = new BooleanProperty("enemies", true);
@@ -48,6 +49,8 @@ public class ESP extends Module {
     public final FloatProperty glowWidth = new FloatProperty("glow-width", 1.5F, 0.5F, 5.0F, () -> this.mode.getValue() == 6);
     public final IntProperty glowPasses = new IntProperty("glow-passes", 3, 1, 3, () -> this.mode.getValue() == 6);
     public final FloatProperty glowExpand = new FloatProperty("glow-expand", 0.12F, 0.02F, 0.4F, () -> this.mode.getValue() == 6);
+    public final BooleanProperty redOnDamage = new BooleanProperty("red-on-damage", false);
+    public final IntProperty maxDistance = new IntProperty("max-distance", 512, 0, 512);
     private final List<EntityPlayer> espPlayers = new ArrayList<EntityPlayer>(64);
     private static final Color TEAM_BLUE = new Color(ChatColors.BLUE.toAwtColor());
     private static final Color TEAM_RED = new Color(ChatColors.RED.toAwtColor());
@@ -70,7 +73,7 @@ public class ESP extends Module {
     private boolean shouldRenderPlayer(EntityPlayer entityPlayer) {
         if (entityPlayer.deathTime > 0) {
             return false;
-        } else if (mc.getRenderViewEntity().getDistanceToEntity(entityPlayer) > 512.0F) {
+        } else if (mc.getRenderViewEntity().getDistanceToEntity(entityPlayer) > (float) this.maxDistance.getValue()) {
             return false;
         } else if (!entityPlayer.ignoreFrustumCheck && !RenderUtil.isInViewFrustum(entityPlayer.getEntityBoundingBox(), 0.1F)) {
             return false;
@@ -88,7 +91,9 @@ public class ESP extends Module {
     }
 
     private Color getEntityColor(EntityPlayer entityPlayer) {
-        if (TeamUtil.isFriend(entityPlayer)) {
+        if (this.redOnDamage.getValue() && entityPlayer.hurtTime > 0) {
+            return new Color(Color.RED.getRGB());
+        } else if (TeamUtil.isFriend(entityPlayer)) {
             return OpenSkid.friendManager.getColor();
         } else if (TeamUtil.isTarget(entityPlayer)) {
             return OpenSkid.targetManager.getColor();
@@ -137,6 +142,23 @@ public class ESP extends Module {
             if (w < 0.6F) w = 0.6F;
             RenderUtil.drawEntityBoundingBox(player, red, green, blue, ai, w, expand);
         }
+        GlStateManager.resetColor();
+    }
+
+    private void renderRing(EntityPlayer player, Color color) {
+        float partialTicks = ((IAccessorMinecraft) mc).getTimer().renderPartialTicks;
+        double x = RenderUtil.lerpDouble(player.posX, player.lastTickPosX, partialTicks)
+                - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosX();
+        double y = RenderUtil.lerpDouble(player.posY, player.lastTickPosY, partialTicks)
+                - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosY() + 0.05;
+        double z = RenderUtil.lerpDouble(player.posZ, player.lastTickPosZ, partialTicks)
+                - ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosZ();
+        RenderUtil.drawCircle(x, y, z, 0.7, 45, color.getRGB());
+        GlStateManager.resetColor();
+    }
+
+    private void renderShaded(EntityPlayer player, Color color) {
+        RenderUtil.drawEntityBox(player, color.getRed(), color.getGreen(), color.getBlue());
         GlStateManager.resetColor();
     }
 
@@ -237,7 +259,7 @@ public class ESP extends Module {
 
     @EventTarget
     public void onRender(Render3DEvent event) {
-        if (this.isEnabled() && (this.mode.getValue() == 2 || this.mode.getValue() == 4 || this.mode.getValue() == 5 || this.mode.getValue() == 6 || this.healthBar.getValue() == 2)) {
+        if (this.isEnabled() && (this.mode.getValue() == 2 || this.mode.getValue() == 4 || this.mode.getValue() == 5 || this.mode.getValue() == 6 || this.mode.getValue() == 7 || this.mode.getValue() == 8 || this.healthBar.getValue() == 2)) {
             this.collectPlayers();
             RenderUtil.enableRenderState();
             double renderX = ((IAccessorRenderManager) mc.getRenderManager()).getRenderPosX();
@@ -247,7 +269,7 @@ public class ESP extends Module {
             int barMode = this.healthBar.getValue();
             for (EntityPlayer player : this.espPlayers) {
                 if (player.ignoreFrustumCheck || RenderUtil.isInViewFrustum(player.getEntityBoundingBox(), 0.1F)) {
-                    if (renderMode == 2 || renderMode == 4 || renderMode == 5 || renderMode == 6) {
+                    if (renderMode == 2 || renderMode == 4 || renderMode == 5 || renderMode == 6 || renderMode == 7 || renderMode == 8) {
                         Color color = this.getEntityColor(player);
                         float r = (float) color.getRed() / 255.0F;
                         float g = (float) color.getGreen() / 255.0F;
@@ -265,6 +287,12 @@ public class ESP extends Module {
                         }
                         if (renderMode == 6) {
                             this.renderGlow(player, color);
+                        }
+                        if (renderMode == 7) {
+                            this.renderRing(player, color);
+                        }
+                        if (renderMode == 8) {
+                            this.renderShaded(player, color);
                         }
                     }
                     if (barMode == 2) {

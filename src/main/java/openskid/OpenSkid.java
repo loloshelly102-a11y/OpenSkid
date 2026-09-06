@@ -264,6 +264,10 @@ public class OpenSkid {
         moduleManager.modules.put(BlockLadder.class, new BlockLadder());
         moduleManager.modules.put(AutoBed.class, new AutoBed());
         moduleManager.modules.put(NoClickDelay.class, new NoClickDelay());
+        moduleManager.modules.put(FastUse.class, new FastUse());
+        moduleManager.modules.put(DelayRemover.class, new DelayRemover());
+        moduleManager.modules.put(VClip.class, new VClip());
+        moduleManager.modules.put(StopMotion.class, new StopMotion());
         moduleManager.modules.put(Arrows.class, new Arrows());
         moduleManager.modules.put(BlocksESP.class, new BlocksESP());
         moduleManager.modules.put(MobESP.class, new MobESP());

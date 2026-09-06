@@ -67,7 +67,7 @@ public class LegacyClickGui extends GuiScreen {
         List<Module> movementModules = collect(
                 AntiAFK.class, Fly.class, FastBow.class, openskid.module.modules.Timer.class, Speed.class, LongJump.class,
                 Sprint.class, SafeWalk.class, Jesus.class, Blink.class, NoFall.class, NoSlow.class, KeepSprint.class,
-                NoJumpDelay.class, AntiVoid.class, BridgeAssist.class, Clutch.class, WaterClutch.class, PearlSaver.class, LadderClutch.class, Phase.class, Step.class, Freecam.class, Spider.class, Tower.class, NoClickDelay.class, NoWeb.class, Parkour.class);
+                NoJumpDelay.class, AntiVoid.class, BridgeAssist.class, Clutch.class, WaterClutch.class, PearlSaver.class, LadderClutch.class, Phase.class, Step.class, Freecam.class, Spider.class, Tower.class, NoClickDelay.class, VClip.class, StopMotion.class, NoWeb.class, Parkour.class);
         List<Module> renderModules = collect(
                 ESP.class, Chams.class, FullBright.class, Tracers.class, NameTags.class, Xray.class, TargetESP.class,
                 TargetHUD.class, Indicators.class, BedESP.class, ItemESP.class, BreakProgress.class, ViewClip.class,
@@ -81,7 +81,7 @@ public class LegacyClickGui extends GuiScreen {
                 AutoHeal.class, FakeLag.class, AutoTool.class, ChestStealer.class, AutoBedDef.class, BedDefender.class, InvManager.class,
                 InvWalk.class, Scaffold.class, AutoBlockIn.class, AutoSwap.class, AutoArmor.class, AutoPot.class, AutoSoup.class, AutoWeapon.class, SpeedMine.class, FastPlace.class,
                 GhostHand.class, MCF.class, AntiDebuff.class, FlagDetector.class, AutoGapple.class, ChestAura.class,
-                AutoHeadHitter.class, ThrowAura.class, Nuker.class, AutoPlace.class, LegitScaffold.class, BlockLadder.class, AutoBed.class, AutoRespawn.class);
+                AutoHeadHitter.class, ThrowAura.class, Nuker.class, AutoPlace.class, LegitScaffold.class, BlockLadder.class, AutoBed.class, AutoRespawn.class, FastUse.class, DelayRemover.class);
         List<Module> miscModules = collect(
                 Spammer.class, BedNuker.class, AntiBot.class, BedTracker.class, LightningTracker.class, NoRotate.class,
                 NickHider.class, AntiObbyTrap.class, AntiObfuscate.class, AutoAnduril.class, InventoryClicker.class,

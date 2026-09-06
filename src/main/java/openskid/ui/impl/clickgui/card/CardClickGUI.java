@@ -68,10 +68,10 @@ public class CardClickGUI extends GuiScreen {
                 "ForwardTrack", "KeepRange", "SmartBlinker", "LegitReach", "ProjectileAimBot", "ArmorBreaker");
         map(Tab.MOVEMENT, "AntiAFK", "Fly", "FastBow", "Speed", "LongJump", "Sprint", "SafeWalk",
                 "Jesus", "NoFall", "NoSlow", "KeepSprint", "NoJumpDelay", "BridgeAssist", "Clutch", "WaterClutch", "PearlSaver",
-                "LadderClutch", "Phase", "Step", "Freecam", "Spider", "Tower", "NoClickDelay", "NoWeb", "Parkour");
+                "LadderClutch", "Phase", "Step", "Freecam", "Spider", "Tower", "NoClickDelay", "VClip", "StopMotion", "NoWeb", "Parkour");
         map(Tab.PLAYER, "AutoHeal", "AutoTool", "ChestStealer", "InvManager", "InvWalk", "Scaffold",
                 "AutoBlockIn", "AutoSwap", "AutoArmor", "AutoPot", "AutoSoup", "AutoWeapon", "SpeedMine", "FastPlace", "MCF", "AntiDebuff", "FlagDetector",
-                "AutoGapple", "Gapple", "ThrowAura", "InventoryClicker", "PacketConsume", "BedDefender", "Nuker", "AutoPlace", "LegitScaffold", "BlockLadder", "AutoBed", "AutoRespawn");
+                "AutoGapple", "Gapple", "ThrowAura", "InventoryClicker", "PacketConsume", "BedDefender", "Nuker", "AutoPlace", "LegitScaffold", "BlockLadder", "AutoBed", "AutoRespawn", "FastUse", "DelayRemover");
         map(Tab.RENDER, "ESP", "Chams", "FullBright", "Fullbright", "Tracers", "NameTags", "Xray",
                 "TargetESP", "TargetHUD", "Indicators", "BedESP", "ItemESP", "ViewClip", "NoHurtCam",
                 "HUD", "Notifications", "ChestESP", "Trajectories", "Radar", "FPScounter", "Fpscounter", "WaterMark",

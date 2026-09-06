@@ -41,7 +41,7 @@ public class NoFall extends Module {
     private double timerRepdist = 0.0;
     private int voidCacheTick = -1;
     private boolean voidCacheResult = true;
-    public final ModeProperty mode = new ModeProperty("mode", 0, new String[]{"PACKET", "BLINK", "NO_GROUND", "SPOOF", "LEGIT", "VULCAN", "TIMER"});
+    public final ModeProperty mode = new ModeProperty("mode", 0, new String[]{"PACKET", "BLINK", "NO_GROUND", "SPOOF", "LEGIT", "VULCAN", "TIMER", "OnGround1", "OnGround2", "MatrixSpoof", "HypixelNoGround"});
     public final FloatProperty distance = new FloatProperty("distance", 3.0F, 0.0F, 20.0F);
     public final IntProperty delay = new IntProperty("delay", 0, 0, 10000);
     public final FloatProperty vulcanFall = new FloatProperty("vulcan-fall", 7.0F, 3.0F, 12.0F, () -> mode.getValue() == 5);
@@ -154,6 +154,33 @@ public class NoFall extends Module {
                         }
                         break;
                     }
+                    case 7:
+                        ((IAccessorC03PacketPlayer) packet).setOnGround(true);
+                        mc.thePlayer.fallDistance = 0.0F;
+                        break;
+                    case 8:
+                        if (!packet.isOnGround() && mc.thePlayer.fallDistance > 3.0F && this.canTrigger()) {
+                            this.packetDelayTimer.reset();
+                            ((IAccessorC03PacketPlayer) packet).setOnGround(true);
+                            mc.thePlayer.fallDistance = 0.0F;
+                        }
+                        break;
+                    case 9:
+                        if (!packet.isOnGround() && mc.thePlayer.fallDistance > 3.0F && this.timerTicks % 2 == 0 && this.canTrigger()) {
+                            this.packetDelayTimer.reset();
+                            ((IAccessorC03PacketPlayer) packet).setOnGround(true);
+                            mc.thePlayer.fallDistance = 0.0F;
+                        }
+                        break;
+                    case 10:
+                        if (mc.thePlayer.fallDistance > 3.0F && this.canTrigger() && !this.isOverVoid()) {
+                            this.packetDelayTimer.reset();
+                            PacketUtil.sendPacketNoEvent(new C03PacketPlayer(true));
+                            mc.thePlayer.fallDistance = 0.0F;
+                        } else {
+                            ((IAccessorC03PacketPlayer) packet).setOnGround(false);
+                        }
+                        break;
             }
         }
     }

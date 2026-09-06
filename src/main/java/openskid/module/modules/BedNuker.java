@@ -41,6 +41,7 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import org.lwjgl.opengl.GL11;
 
@@ -69,10 +70,11 @@ public class BedNuker extends Module {
     private long whitelistScanAt = -1L;
     private BlockPos ownBedAnchor = null;
     private static final int MODE_INSTANT = 3;
+    private static final int MODE_LEGIT = 4;
     // Adapted from donor BedAura respawn anchor recapture.
     private boolean waitingForRespawn = false;
     private long respawnMessageTime = 0L;
-    public final ModeProperty mode = new ModeProperty("mode", 0, new String[]{"NORMAL", "SWAP", "PROTECT", "INSTANT"});
+    public final ModeProperty mode = new ModeProperty("mode", 0, new String[]{"NORMAL", "SWAP", "PROTECT", "INSTANT", "LEGIT"});
     public final FloatProperty range = new FloatProperty("range", 4.5F, 3.0F, 6.0F);
     public final PercentProperty speed = new PercentProperty("speed", 0);
     public final BooleanProperty groundSpeed = new BooleanProperty("ground-spoof", false);
@@ -101,6 +103,9 @@ public class BedNuker extends Module {
     // Instant-only effects toggle, gated per-mode.
     public final BooleanProperty instantEffects = new BooleanProperty("instant-effects", true,
             () -> this.mode.getValue() == MODE_INSTANT);
+    public final BooleanProperty onlyVisible = new BooleanProperty("only-visible", false);
+    public final BooleanProperty silentSwing = new BooleanProperty("silent-swing", false);
+    public final FloatProperty rotationSpeed = new FloatProperty("rotation-speed", 20.0F, 2.0F, 20.0F);
 
     private void resetBreaking() {
         if (this.targetBed != null && mc.theWorld != null && mc.thePlayer != null) {
@@ -412,7 +417,8 @@ public class BedNuker extends Module {
                         Block block = mc.theWorld.getBlockState(newPos).getBlock();
                         if (block instanceof BlockBed
                                 && PlayerUtil.isBlockWithinReach(newPos, x, y, z, this.range.getValue().doubleValue())
-                                && (!this.pairCheck.getValue() || this.footHeadPair(newPos) != null)) {
+                                && (!this.pairCheck.getValue() || this.footHeadPair(newPos) != null)
+                                && (!this.onlyVisible.getValue() || this.hasLineOfSight(newPos))) {
                             targets.add(newPos);
                         }
                     }
@@ -445,11 +451,34 @@ public class BedNuker extends Module {
     }
 
     private void doSwing() {
-        if (this.swing.getValue()) {
+        if (this.silentSwing.getValue()) {
+            PacketUtil.sendPacket(new C0APacketAnimation());
+        } else if (this.swing.getValue()) {
             mc.thePlayer.swingItem();
         } else {
             PacketUtil.sendPacket(new C0APacketAnimation());
         }
+    }
+
+    private boolean hasLineOfSight(BlockPos pos) {
+        if (mc.thePlayer == null || mc.theWorld == null) {
+            return false;
+        }
+        Vec3 eyes = mc.thePlayer.getPositionEyes(1.0F);
+        Vec3 target = new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+        MovingObjectPosition mop = mc.theWorld.rayTraceBlocks(eyes, target);
+        return mop == null || mop.typeOfHit != MovingObjectType.BLOCK || mop.getBlockPos().equals(pos);
+    }
+
+    private float rotMove(float target, float current, float speed) {
+        float diff = MathHelper.wrapAngleTo180_float(target - current);
+        if (diff > speed) {
+            return current + speed;
+        }
+        if (diff < -speed) {
+            return current - speed;
+        }
+        return target;
     }
 
     // Adapted from donor BedAura Instant mode: START plus STOP in the same tick.
@@ -550,7 +579,7 @@ public class BedNuker extends Module {
             }
             if (this.targetBed != null) {
                 int slot = ItemUtil.findInventorySlot(mc.thePlayer.inventory.currentItem, mc.theWorld.getBlockState(this.targetBed).getBlock());
-                if (this.mode.getValue() == 0 && !ScaffoldSessionState.hasSavedSlot(this.savedSlot)) {
+                if ((this.mode.getValue() == 0 || this.mode.getValue() == MODE_LEGIT) && !ScaffoldSessionState.hasSavedSlot(this.savedSlot)) {
                     this.savedSlot = ScaffoldSessionState.saveSlotOnce(this.savedSlot, mc.thePlayer.inventory.currentItem);
                     mc.thePlayer.inventory.currentItem = slot;
                     this.syncHeldItem();
@@ -578,13 +607,20 @@ public class BedNuker extends Module {
                         }
                         this.breaking = true;
                         this.tickCounter++;
-                        this.breakProgress = this.breakProgress
-                                + this.getBreakDelta(mc.theWorld.getBlockState(this.targetBed), this.targetBed, slot, mc.thePlayer.onGround);
+                        boolean legit = this.mode.getValue() == MODE_LEGIT;
+                        float gained = this.getBreakDelta(mc.theWorld.getBlockState(this.targetBed), this.targetBed, slot, mc.thePlayer.onGround);
+                        if (legit) {
+                            gained *= 0.55F;
+                            if (this.tickCounter % 4 == 0) {
+                                this.doSwing();
+                            }
+                        }
+                        this.breakProgress = this.breakProgress + gained;
                         float tick = (float) this.tickCounter;
                         IBlockState blockState = mc.theWorld.getBlockState(this.targetBed);
                         boolean canBreak = mc.thePlayer.onGround && this.groundSpeed.getValue();
                         BlockPos target = this.targetBed;
-                        float delta = tick * this.getBreakDelta(blockState, target, slot, canBreak);
+                        float delta = tick * this.getBreakDelta(blockState, target, slot, canBreak) * (legit ? 0.55F : 1.0F);
                         mc.effectRenderer.addBlockHitEffects(this.targetBed, this.getHitFacing(this.targetBed));
                         if (this.breakProgress >= 1.0F - 0.3F * ((float) this.speed.getValue().intValue() / 100.0F)
                                 || delta >= 1.0F - 0.3F * ((float) this.speed.getValue().intValue() / 100.0F)) {
@@ -653,8 +689,15 @@ public class BedNuker extends Module {
                 double y = (double) this.targetBed.getY() + 0.5 - mc.thePlayer.posY - (double) mc.thePlayer.getEyeHeight();
                 double z = (double) this.targetBed.getZ() + 0.5 - mc.thePlayer.posZ;
                 float[] rotations = RotationUtil.getRotationsTo(x, y, z, event.getYaw(), event.getPitch());
-                event.setRotation(rotations[0], rotations[1], 5);
-                event.setPervRotation(this.moveFix.getValue() != 0 ? rotations[0] : mc.thePlayer.rotationYaw, 5);
+                float yaw = rotations[0];
+                float pitch = rotations[1];
+                float speed = this.rotationSpeed.getValue();
+                if (speed < 20.0F) {
+                    yaw = this.rotMove(rotations[0], event.getYaw(), speed);
+                    pitch = this.rotMove(rotations[1], event.getPitch(), speed);
+                }
+                event.setRotation(yaw, pitch, 5);
+                event.setPervRotation(this.moveFix.getValue() != 0 ? yaw : mc.thePlayer.rotationYaw, 5);
             }
         }
     }

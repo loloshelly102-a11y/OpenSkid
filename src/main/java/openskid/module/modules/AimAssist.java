@@ -48,6 +48,10 @@ public class AimAssist extends Module {
     public final BooleanProperty allowTools = new BooleanProperty("allow-tools", false, this.weaponOnly::getValue);
     public final BooleanProperty botChecks = new BooleanProperty("bot-check", true);
     public final BooleanProperty team = new BooleanProperty("teams", true);
+    public final ModeProperty targetSort = new ModeProperty("target-sort", 0, new String[]{"DISTANCE", "ANGLE", "HEALTH"});
+    public final IntProperty hoverDelay = new IntProperty("hover-delay", 0, 0, 1000);
+    private EntityPlayer hoverTarget = null;
+    private long hoverStart = 0L;
     private boolean isValidTarget(EntityPlayer entityPlayer) {
         if (entityPlayer != mc.thePlayer && entityPlayer != mc.thePlayer.ridingEntity) {
             if (entityPlayer == mc.getRenderViewEntity() || entityPlayer == mc.getRenderViewEntity().ridingEntity) return false;
@@ -71,14 +75,45 @@ public class AimAssist extends Module {
     }
 
     private EntityPlayer selectTarget() {
+        Comparator<EntityPlayer> ordering;
+        switch (this.targetSort.getValue()) {
+            case 1:
+                ordering = Comparator.comparingDouble(RotationUtil::angleToEntity);
+                break;
+            case 2:
+                ordering = Comparator.comparingDouble(entityPlayer -> entityPlayer.getHealth() + entityPlayer.getAbsorptionAmount());
+                break;
+            default:
+                ordering = Comparator.comparingDouble(RotationUtil::distanceToEntity);
+                break;
+        }
         List<EntityPlayer> inRange = mc.theWorld.loadedEntityList.stream()
                 .filter(entity -> entity instanceof EntityPlayer).map(entity -> (EntityPlayer) entity)
                 .filter(this::isValidTarget)
-                .sorted(Comparator.comparingDouble(RotationUtil::distanceToEntity))
+                .sorted(ordering)
                 .collect(Collectors.toList());
         if (inRange.isEmpty()) return null;
         if (inRange.stream().anyMatch(this::isInReach)) inRange.removeIf(entityPlayer -> !this.isInReach(entityPlayer));
         return inRange.get(0);
+    }
+
+    private boolean passesHoverGate(EntityPlayer target) {
+        int delay = this.hoverDelay.getValue();
+        if (delay <= 0) return true;
+        boolean hovering = mc.objectMouseOver != null
+                && mc.objectMouseOver.typeOfHit == MovingObjectType.ENTITY
+                && mc.objectMouseOver.entityHit == target;
+        if (!hovering) {
+            this.hoverTarget = null;
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        if (this.hoverTarget != target) {
+            this.hoverTarget = target;
+            this.hoverStart = now;
+            return false;
+        }
+        return now - this.hoverStart >= delay;
     }
 
     public AimAssist() {
@@ -99,6 +134,7 @@ public class AimAssist extends Module {
         if (!attacking || !this.isLookingAtBlock()) {
             if (attacking || !this.timer.hasTimeElapsed(350L)) {
                 EntityPlayer player = selectTarget();
+                if (player != null && !this.passesHoverGate(player)) return;
                 if (player != null && !(RotationUtil.distanceToEntity(player) <= 0.0)) {
                     AxisAlignedBB axisAlignedBB = player.getEntityBoundingBox();
                     double collisionBorderSize = player.getCollisionBorderSize();
@@ -124,6 +160,7 @@ public class AimAssist extends Module {
 
         EntityPlayer target = selectTarget();
         if (target == null) return;
+        if (!this.passesHoverGate(target)) return;
 
         // 1. 将人体分为头/躯干/腿三部分（参考 KillAura）
         AxisAlignedBB fullBox = target.getEntityBoundingBox();
