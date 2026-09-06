@@ -96,11 +96,6 @@ public class OpenSkidMainMenu extends GuiScreen implements GuiYesNoCallback
         return Minecraft.getMinecraft().gameSettings.getOptionOrdinalValue(GameSettings.Options.REALMS_NOTIFICATIONS) && this.field_183503_M != null;
     }
 
-    public void addSetupButton()
-    {
-        this.buttonList.add(new ModernGuiButton(16, this.width / 2 - 100, this.height / 4 + 48 + 72 + 60, 200, 20, "First-time setup"));
-    }
-
     private int firstShaderButtonY()
     {
         for (Object button : this.buttonList)
@@ -243,11 +238,6 @@ public class OpenSkidMainMenu extends GuiScreen implements GuiYesNoCallback
         if (button.id == 15)
         {
             this.mc.displayGuiScreen(new GuiBackgroundSelector(this));
-        }
-
-        if (button.id == 16)
-        {
-            openskid.setup.SetupHook.open();
         }
 
         if (button.id == 11)

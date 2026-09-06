@@ -3,6 +3,10 @@ package openskid.setup;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import openskid.ui.impl.gui.BackgroundRenderer;
+import openskid.ui.impl.gui.ModernGuiButton;
+import openskid.font.FontProcess;
+import openskid.util.RenderUtil;
 import org.lwjgl.input.Mouse;
 
 import java.awt.Desktop;
@@ -16,7 +20,14 @@ import java.util.Map;
 import java.util.Set;
 
 public class SetupScreen extends GuiScreen {
-    private static final int ROW_H = 22;
+    private static final int ROW_H = 30;
+    private static final int CARD_W = 440;
+
+    private static final int ACCENT = 0xFF55FFFF;
+    private static final int GREEN = 0xFF55FF55;
+    private static final int RED = 0xFFFF5555;
+    private static final int CARD_BG = 0xFF141416;
+    private static final int CARD_HOVER = 0xFF1E1E22;
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private final List<Row> rows = new ArrayList<>();
@@ -24,6 +35,7 @@ public class SetupScreen extends GuiScreen {
     private final Map<SetupEntry, Long> progress = new HashMap<>();
     private final Map<SetupEntry, Long> totals = new HashMap<>();
 
+    private boolean returnToMenu;
     private int scroll;
     private String footer = "";
     private boolean finished;
@@ -34,8 +46,6 @@ public class SetupScreen extends GuiScreen {
     private GuiButton skipButton;
     private GuiButton selectAllButton;
     private GuiButton rescanButton;
-    private GuiButton restartButton;
-    private GuiButton laterButton;
 
     private static final class Row {
         final SetupEntry entry;
@@ -62,6 +72,10 @@ public class SetupScreen extends GuiScreen {
         }
     }
 
+    public void setReturnToMenu(boolean returnToMenu) {
+        this.returnToMenu = returnToMenu;
+    }
+
     private void rescan() {
         rows.clear();
         selected.clear();
@@ -69,8 +83,7 @@ public class SetupScreen extends GuiScreen {
             if (entry.auto) {
                 continue;
             }
-            Row row = new Row(entry, SetupScanner.isInstalled(entry) ? "installed" : "missing");
-            rows.add(row);
+            rows.add(new Row(entry, SetupScanner.isInstalled(entry) ? "installed" : "missing"));
             if (!SetupScanner.isInstalled(entry) && SetupDownloader.hasLink(entry)) {
                 selected.add(entry);
             }
@@ -79,8 +92,7 @@ public class SetupScreen extends GuiScreen {
             if (entry.auto) {
                 continue;
             }
-            Row row = new Row(entry, SetupScanner.isInstalled(entry) ? "installed" : "missing");
-            rows.add(row);
+            rows.add(new Row(entry, SetupScanner.isInstalled(entry) ? "installed" : "missing"));
             if (!SetupScanner.isInstalled(entry) && SetupDownloader.hasLink(entry)) {
                 selected.add(entry);
             }
@@ -91,21 +103,19 @@ public class SetupScreen extends GuiScreen {
     public void initGui() {
         buttonList.clear();
         int cx = width / 2;
-        int by = height - 48;
+        int by = height - 44;
         if (!finished) {
-            downloadButton = new GuiButton(1, cx - 220, by, 100, 20, "Download");
-            selectAllButton = new GuiButton(2, cx - 110, by, 100, 20, "Select all");
-            rescanButton = new GuiButton(3, cx, by, 100, 20, "Rescan");
-            skipButton = new GuiButton(4, cx + 110, by, 100, 20, "Skip");
+            downloadButton = new ModernGuiButton(1, cx - 220, by, 104, 20, "Download");
+            selectAllButton = new ModernGuiButton(2, cx - 110, by, 104, 20, "Select all");
+            rescanButton = new ModernGuiButton(3, cx, by, 104, 20, "Rescan");
+            skipButton = new ModernGuiButton(4, cx + 110, by, 104, 20, "Skip");
             buttonList.add(downloadButton);
             buttonList.add(selectAllButton);
             buttonList.add(rescanButton);
             buttonList.add(skipButton);
         } else {
-            restartButton = new GuiButton(5, cx - 110, by, 100, 20, "Restart now");
-            laterButton = new GuiButton(6, cx, by, 100, 20, "Later");
-            buttonList.add(restartButton);
-            buttonList.add(laterButton);
+            buttonList.add(new ModernGuiButton(5, cx - 110, by, 104, 20, "Restart now"));
+            buttonList.add(new ModernGuiButton(6, cx, by, 104, 20, "Later"));
         }
         refreshButtons();
     }
@@ -144,13 +154,24 @@ public class SetupScreen extends GuiScreen {
             checkFinished();
             refreshButtons();
         } else if (button.id == 4) {
-            SetupState.markDone();
-            mc.displayGuiScreen(null);
+            closeDone();
         } else if (button.id == 5) {
             SetupState.markDone();
             mc.shutdown();
         } else if (button.id == 6) {
-            SetupState.markDone();
+            closeDone();
+        }
+    }
+
+    private void closeDone() {
+        SetupState.markDone();
+        if (returnToMenu) {
+            try {
+                mc.displayGuiScreen(new openskid.ui.impl.mainmenu.OpenSkidMainMenu());
+            } catch (Exception e) {
+                mc.displayGuiScreen(null);
+            }
+        } else {
             mc.displayGuiScreen(null);
         }
     }
@@ -231,14 +252,10 @@ public class SetupScreen extends GuiScreen {
                         Row row = find(entry);
                         if (row != null && !silent) {
                             row.busy = false;
-                            row.status = "failed: " + message + " (click to retry)";
+                            row.status = "failed";
                             selected.add(entry);
                         }
-                        if (silent) {
-                            footer = entry.displayName() + " failed: " + message;
-                        } else {
-                            footer = entry.displayName() + " failed: " + message;
-                        }
+                        footer = entry.displayName() + " failed: " + message + ". Click the row to retry.";
                         refreshButtons();
                     }
                 });
@@ -275,15 +292,12 @@ public class SetupScreen extends GuiScreen {
                 return;
             }
         }
-        int pending = 0;
         for (Row row : rows) {
             if (row.status.equals("missing") && SetupDownloader.hasLink(row.entry)) {
-                pending++;
+                return;
             }
         }
-        if (pending == 0) {
-            finish();
-        }
+        finish();
     }
 
     private void finish() {
@@ -328,11 +342,40 @@ public class SetupScreen extends GuiScreen {
             if (scroll < 0) {
                 scroll = 0;
             }
-            int maxScroll = Math.max(0, rows.size() * ROW_H + 40 - (height - 140));
+            int maxScroll = Math.max(0, contentHeight() - (height - 150));
             if (scroll > maxScroll) {
                 scroll = maxScroll;
             }
         }
+    }
+
+    private int contentHeight() {
+        int height = 0;
+        SetupEntry.Section last = null;
+        for (Row row : rows) {
+            if (last != row.entry.section) {
+                height += 26;
+                last = row.entry.section;
+            }
+            height += ROW_H;
+        }
+        return height;
+    }
+
+    private int rowTop(int index) {
+        int y = 86 - scroll;
+        SetupEntry.Section last = null;
+        for (int i = 0; i <= index && i < rows.size(); i++) {
+            if (last != rows.get(i).entry.section) {
+                y += 26;
+                last = rows.get(i).entry.section;
+            }
+            if (i == index) {
+                return y;
+            }
+            y += ROW_H;
+        }
+        return y;
     }
 
     @Override
@@ -344,71 +387,106 @@ public class SetupScreen extends GuiScreen {
         if (button != 0) {
             return;
         }
-        int y = 70 - scroll;
-        SetupEntry.Section lastSection = null;
+        int cx = width / 2;
         for (int i = 0; i < rows.size(); i++) {
-            Row row = rows.get(i);
-            if (lastSection != row.entry.section) {
-                y += 18;
-                lastSection = row.entry.section;
-            }
-            if (mouseX >= width / 2 - 200 && mouseX <= width / 2 + 200 && mouseY >= y && mouseY <= y + ROW_H - 4) {
+            int y = rowTop(i);
+            if (mouseX >= cx - CARD_W / 2 && mouseX <= cx + CARD_W / 2 && mouseY >= y && mouseY <= y + ROW_H - 4) {
+                Row row = rows.get(i);
                 toggle(row);
+                if (row.status.startsWith("failed")) {
+                    row.busy = true;
+                    row.status = "starting";
+                    selected.remove(row.entry);
+                    SetupDownloader.downloadAsync(row.entry, listener(row.entry, false));
+                    refreshButtons();
+                }
                 break;
             }
-            y += ROW_H;
         }
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float ticks) {
-        drawDefaultBackground();
-        drawCenteredString(fontRendererObj, "OpenSkid first-time setup", width / 2, 20, 0xFFFFFF);
-        drawCenteredString(fontRendererObj, "Tick what you want. Missing items download to the right folders.", width / 2, 34, 0xAAAAAA);
-        int y = 70 - scroll;
+        try {
+            BackgroundRenderer.draw(width, height);
+        } catch (Exception e) {
+            drawDefaultBackground();
+        }
+        drawRect(0, 0, width, height, 0x99000000);
+
+        FontProcess.getScaledFont("sans", 3.0f).drawCenteredString("OpenSkid Setup", width / 2, 22, -1);
+        drawCenteredString(fontRendererObj, "Tick what you want. Missing items download to the right folders.",
+                width / 2, 52, 0xFFAAAAAA);
+
+        int cx = width / 2;
         SetupEntry.Section lastSection = null;
         for (int i = 0; i < rows.size(); i++) {
             Row row = rows.get(i);
             if (lastSection != row.entry.section) {
-                y += 4;
-                drawString(fontRendererObj, row.entry.section == SetupEntry.Section.MODS ? "Mods" : "Resource packs",
-                        width / 2 - 200, y, 0x55FFFF);
-                y += 14;
+                int hy = rowTop(i) - 20;
+                if (hy > 60 && hy < height - 60) {
+                    drawString(fontRendererObj, row.entry.section == SetupEntry.Section.MODS ? "Mods" : "Resource packs",
+                            cx - CARD_W / 2, hy, 0xFF55FFFF);
+                }
                 lastSection = row.entry.section;
             }
-            drawRow(row, y, selected.contains(row.entry));
-            y += ROW_H;
+            drawRow(row, rowTop(i), mouseX, mouseY, selected.contains(row.entry));
         }
         if (!footer.isEmpty()) {
-            drawCenteredString(fontRendererObj, footer, width / 2, height - 62, 0xFFFF55);
+            drawCenteredString(fontRendererObj, footer, width / 2, height - 58, 0xFFFFFF55);
         }
         super.drawScreen(mouseX, mouseY, ticks);
     }
 
-    private void drawRow(Row row, int y, boolean ticked) {
-        int x = width / 2 - 200;
-        boolean clickable = !row.busy && !row.status.equals("installed");
-        drawRect(x, y, x + 12, y + 12, 0xFF000000);
-        drawRect(x + 1, y + 1, x + 11, y + 11, clickable ? 0xFF222222 : 0xFF111111);
-        if (ticked || row.status.equals("installed")) {
-            drawString(fontRendererObj, "X", x + 3, y + 2, 0x55FF55);
+    private void drawRow(Row row, int y, int mouseX, int mouseY, boolean ticked) {
+        if (y < 60 || y > height - 70) {
+            return;
         }
-        int nameColor = row.status.equals("installed") ? 0x55FF55 : row.status.startsWith("failed") ? 0xFF5555 : 0xFFFFFF;
+        int cx = width / 2;
+        int x = cx - CARD_W / 2;
+        boolean hovered = mouseX >= x && mouseX <= x + CARD_W && mouseY >= y && mouseY <= y + ROW_H - 4;
+        boolean installed = row.status.equals("installed");
+        boolean failed = row.status.startsWith("failed");
+
+        RenderUtil.drawRoundedRect((float) x, (float) y, (float) CARD_W, (float) (ROW_H - 4), 4.0f,
+                hovered && !installed ? CARD_HOVER : CARD_BG, true, true, true, true);
+        int barColor = installed ? GREEN : ticked ? ACCENT : failed ? RED : 0xFF333336;
+        RenderUtil.drawRoundedRect((float) x, (float) y, 3.0f, (float) (ROW_H - 4), 1.0f,
+                barColor, true, true, true, true);
+
+        int checkColor = installed || ticked ? GREEN : 0xFF555558;
+        RenderUtil.drawRoundedRectOutline((float) (x + 12), (float) (y + 7), 12.0f, 12.0f, 3.0f, 1.0f,
+                checkColor, true, true, true, true);
+        if (ticked || installed) {
+            drawString(fontRendererObj, "X", x + 15, y + 8, 0xFF55FF55);
+        }
+
+        int nameColor = installed ? 0xFF55FF55 : failed ? 0xFFFF5555 : 0xFFFFFFFF;
         String label = row.entry.displayName();
-        if (!SetupDownloader.hasLink(row.entry) && !row.status.equals("installed")) {
+        if (!SetupDownloader.hasLink(row.entry) && !installed) {
             label += " (no link yet)";
         }
-        drawString(fontRendererObj, label, x + 18, y + 2, nameColor);
+        drawString(fontRendererObj, label, x + 30, y + 4, nameColor);
+        drawString(fontRendererObj, row.entry.blurb, x + 30, y + 15, 0xFF777777);
+
         String status = row.status;
+        if (status.equals("failed")) {
+            status = "failed, click to retry";
+        }
+        int statusColor = installed ? 0xFF55FF55 : failed ? 0xFFFF5555 : row.busy ? ACCENT : 0xFFAAAAAA;
+        drawString(fontRendererObj, status, x + CARD_W - fontRendererObj.getStringWidth(status) - 10, y + 4, statusColor);
+
         Long done = progress.get(row.entry);
         Long total = totals.get(row.entry);
-        if (done != null && total != null && total > 0) {
-            status += " " + (done * 100 / total) + "%";
-        } else if (done != null) {
-            status += " " + (done / 1024) + "KB";
+        if (done != null) {
+            float fraction = total != null && total > 0 ? Math.min(1.0f, (float) (done / (double) total)) : -1.0f;
+            if (fraction >= 0) {
+                RenderUtil.drawRoundedRect((float) (x + 30), (float) (y + ROW_H - 8),
+                        (float) ((CARD_W - 40) * fraction), 2.0f, 1.0f, ACCENT, true, true, true, true);
+            } else {
+                drawString(fontRendererObj, (done / 1024) + "KB", x + CARD_W - 60, y + 15, ACCENT);
+            }
         }
-        drawString(fontRendererObj, status, width / 2 + 60, y + 2, 0xAAAAAA);
-        drawString(fontRendererObj, row.entry.blurb, x + 18, y + 11, 0x777777);
     }
 
     @Override
@@ -425,7 +503,7 @@ public class SetupScreen extends GuiScreen {
                 }
             }
             if (!anyBusy) {
-                mc.displayGuiScreen(null);
+                closeDone();
             }
         }
     }

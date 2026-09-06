@@ -10,7 +10,9 @@ public final class SetupHook {
     public static void onMainMenu(OpenSkidMainMenu menu) {
         try {
             if (!SetupState.isDone()) {
-                menu.addSetupButton();
+                SetupScreen screen = new SetupScreen();
+                screen.setReturnToMenu(true);
+                Minecraft.getMinecraft().displayGuiScreen(screen);
             }
         } catch (Exception ignored) {
         }
