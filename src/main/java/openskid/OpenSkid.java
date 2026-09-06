@@ -290,6 +290,7 @@ public class OpenSkid {
         commandManager.commands.add(new ModuleCommand());
         commandManager.commands.add(new OnlineConfigCommand());
         commandManager.commands.add(new PlayerCommand());
+        commandManager.commands.add(new SetupCommand());
         commandManager.commands.add(new ShowCommand());
         commandManager.commands.add(new ScriptCommand());
         commandManager.commands.add(new TargetCommand());

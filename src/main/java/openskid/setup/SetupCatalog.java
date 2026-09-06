@@ -1,0 +1,109 @@
+package openskid.setup;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public final class SetupCatalog {
+    private SetupCatalog() {
+    }
+
+    public static List<SetupEntry> mods() {
+        List<SetupEntry> out = new ArrayList<>();
+        out.add(new SetupEntry(SetupEntry.Section.MODS, SetupEntry.Source.DIRECT,
+                "3DSkinLayers", "3D skin layers on players.",
+                "3dSkinLayers-forge-mc1.8.9-1.2.0.jar",
+                "https://cdn.modrinth.com/data/zV5r3pPn/versions/1.2.0-forge-1.8.9/3dSkinLayers-forge-mc1.8.9-1.2.0.jar?mr_download_reason=standalone&mr_game_version=1.8.9&mr_loader=forge",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.MODS, SetupEntry.Source.DIRECT,
+                "Controlling", "Searchable keybind menu.",
+                "Controlling-7.0.0.1.jar",
+                "https://www.curseforge.com/api/v1/mods/250398/files/3810294/download",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.MODS, SetupEntry.Source.DIRECT,
+                "CreamyKeys", "Keystrokes overlay.",
+                "CreamyKeys-0.0.5-1.8.9.jar",
+                "https://cdn.modrinth.com/data/vKOxyOq8/versions/pdFnz68w/CreamyKeys-0.0.5-1.8.9.jar?mr_download_reason=standalone&mr_game_version=1.8.9",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.MODS, SetupEntry.Source.DIRECT,
+                "ModernF3", "Cleaner F3 debug screen.",
+                "ModernF3-1.8.9-forge-1.0.0.jar",
+                "https://cdn.modrinth.com/data/nc1d7LP3/versions/JGiY0f7H/ModernF3-1.8.9-forge-1.0.0.jar?mr_download_reason=standalone",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.MODS, SetupEntry.Source.DIRECT,
+                "WaveyCapes", "Animated cape physics.",
+                "waveycapes-forge-mc1.8.9-1.2.0.jar",
+                "https://cdn.modrinth.com/data/kYuIpRLv/versions/1.2.0-forge-1.8/waveycapes-forge-mc1.8.9-1.2.0.jar?mr_download_reason=standalone&mr_game_version=1.8.9",
+                0, false));
+        return Collections.unmodifiableList(out);
+    }
+
+    public static List<SetupEntry> packs() {
+        List<SetupEntry> out = new ArrayList<>();
+        // TODO: real share link still missing (line 1 of the list was cut off).
+        out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
+                "2sa 250k [128x]", "PvP sound pack.",
+                "!            \u00A7b 2sa \u00A7e250k [128x].zip",
+                "PASTE_FULL_SHARE_LINK_HERE",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
+                "Fosyx Sound Pack", "PvP sound pack.",
+                "!        Fosyx Sound Pack.zip",
+                "https://www.mediafire.com/file/fjbu486iuaaczcs/%2521_Fosyx_Sound_Pack.zip/file",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
+                "Urge Revamp", "PvP sound pack.",
+                "!    \u00A74Urge Revamp.zip",
+                "https://www.mediafire.com/file/l0lm240xobgx18e/!++++%C2%A74Urge+Revamp.zip/file",
+                0, false));
+        // TODO: Wood and Meow share the same file id in the list. Needs the real Wood link.
+        out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
+                "Wood Sound Overlay", "Hit sound overlay.",
+                "\u00A74Wood \u00A7fSound \u00A74Overlay.zip",
+                "PASTE_REAL_WOOD_SHARE_LINK_HERE",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
+                "Axe Sound Overlay", "Hit sound overlay.",
+                "\u00A77Axe \u00A7eSound \u00A77Overlay.zip",
+                "https://www.mediafire.com/file/u6vhi74i2zr8vro/%C2%A77Axe+%C2%A7eSound+%C2%A77Overlay.zip/file",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
+                "Meow Sound Overlay", "Hit sound overlay.",
+                "\u00A7bMeow \u00A7fSound \u00A7bOverlay.zip",
+                "https://www.mediafire.com/file/8pl6uc50gq4zlvz/%C2%A7bMeow+%C2%A7fSound+%C2%A7bOverlay.zip/file",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
+                "Laser Sound Overlay", "Hit sound overlay.",
+                "\u00A7cLaser \u00A7aSound \u00A7cOverlay.zip",
+                "https://www.mediafire.com/file/msfsktym46xzbqg/%C2%A7cLaser+%C2%A7aSound+%C2%A7cOverlay.zip/file",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
+                "Glass Sound Overlay", "Hit sound overlay.",
+                "\u00A7fGlass \u00A7bSound \u00A7fOverlay.zip",
+                "https://www.mediafire.com/file/935puti6h77hyyc/%C2%A7fGlass+%C2%A7bSound+%C2%A7fOverlay.zip/file",
+                0, false));
+        out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
+                "Stewound", "Sound pack.",
+                "Stewound.zip",
+                "https://www.mediafire.com/file/4yokus1l2j2hiox/Stewound.zip/file",
+                0, false));
+        return Collections.unmodifiableList(out);
+    }
+
+    public static List<SetupEntry> all() {
+        List<SetupEntry> out = new ArrayList<>();
+        out.addAll(mods());
+        out.addAll(packs());
+        return Collections.unmodifiableList(out);
+    }
+
+    public static List<SetupEntry> autoEntries() {
+        List<SetupEntry> out = new ArrayList<>();
+        for (SetupEntry entry : all()) {
+            if (entry.auto) {
+                out.add(entry);
+            }
+        }
+        return Collections.unmodifiableList(out);
+    }
+}

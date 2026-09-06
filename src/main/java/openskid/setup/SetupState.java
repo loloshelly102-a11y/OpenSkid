@@ -1,0 +1,44 @@
+package openskid.setup;
+
+import java.io.File;
+
+public final class SetupState {
+    private SetupState() {
+    }
+
+    public static File markerFile() {
+        return new File("./config/OpenSkid/setup_done");
+    }
+
+    public static boolean isDone() {
+        try {
+            return markerFile().exists();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static void markDone() {
+        try {
+            File marker = markerFile();
+            File parent = marker.getParentFile();
+            if (parent != null) {
+                parent.mkdirs();
+            }
+            if (!marker.exists()) {
+                marker.createNewFile();
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void reset() {
+        try {
+            File marker = markerFile();
+            if (marker.exists()) {
+                marker.delete();
+            }
+        } catch (Exception ignored) {
+        }
+    }
+}
