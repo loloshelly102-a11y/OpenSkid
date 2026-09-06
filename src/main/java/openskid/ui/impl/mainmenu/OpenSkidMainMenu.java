@@ -432,7 +432,20 @@ public class OpenSkidMainMenu extends GuiScreen implements GuiYesNoCallback
             BackgroundRenderer.draw(this.width, this.height);
         }
 
-        FontProcess.getScaledFont("sans", 3.0f).drawCenteredString("OpenSkid", this.width / 2, 35, -1);
+        float entrance = Math.min(1.0f, (System.currentTimeMillis() - initTime) / 600.0f);
+        float titleY = 35.0f + (1.0f - entrance) * 14.0f;
+        FontProcess.getScaledFont("sans", 3.0f).drawCenteredString("OpenSkid", this.width / 2, titleY, -1);
+
+        int footerAlpha = (int) (entrance * 255.0f) << 24;
+        String footer = String.format("OpenSkid  |  %s  |  %s modules",
+                this.mc.getSession() == null ? "offline" : this.mc.getSession().getUsername(),
+                openskid.OpenSkid.moduleManager == null ? "?" : String.valueOf(openskid.OpenSkid.moduleManager.modules.size()));
+        this.drawString(this.fontRendererObj, footer, 4, this.height - 12,
+                footerAlpha | 0x70A0A0);
+
+        if (entrance < 1.0f) {
+            drawRect(0, 0, this.width, this.height, ((int) ((1.0f - entrance) * 160.0f) << 24));
+        }
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 

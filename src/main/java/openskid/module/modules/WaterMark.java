@@ -218,6 +218,21 @@ public class WaterMark extends Module {
         float y = 4.0f;
         long time = System.currentTimeMillis();
 
+        float textHeight = customFont ? (float) fr.getHeight() : (float) mc.fontRendererObj.FONT_HEIGHT;
+        float textWidth = 0.0f;
+        for (int i = 0; i < text.length(); i++) {
+            String charStr = String.valueOf(text.charAt(i));
+            textWidth += customFont ? (float) fr.getStringWidth(charStr)
+                    : (float) mc.fontRendererObj.getStringWidth(charStr);
+        }
+
+        int cardBg = 0xFF141416;
+        int accent = hud == null ? 0xFF55FFFF : hud.getColor(time, 0L);
+        openskid.util.RenderUtil.drawRoundedRect(x - 4.0f, y - 3.0f, textWidth + 8.0f, textHeight + 6.0f, 4.0f,
+                cardBg, true, true, true, true);
+        openskid.util.RenderUtil.drawRoundedRect(x - 4.0f, y - 3.0f, 2.5f, textHeight + 6.0f, 1.0f,
+                accent, true, true, true, true);
+
         GlStateManager.pushMatrix();
 
         char[] characters = text.toCharArray();
@@ -260,7 +275,7 @@ public class WaterMark extends Module {
         }
 
         String exhibitionText = "O";
-        String restText = "penOpenSkid ";
+        String restText = "penSkid ";
         String fpsValue = fps + "FPS";
         String pingValue = ping + "ms";
 
