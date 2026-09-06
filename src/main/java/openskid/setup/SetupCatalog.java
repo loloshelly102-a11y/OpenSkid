@@ -40,11 +40,10 @@ public final class SetupCatalog {
 
     public static List<SetupEntry> packs() {
         List<SetupEntry> out = new ArrayList<>();
-        // TODO: real share link still missing (line 1 of the list was cut off).
         out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
                 "2sa 250k [128x]", "PvP sound pack.",
-                "!            \u00A7b 2sa \u00A7e250k [128x].zip",
-                "PASTE_FULL_SHARE_LINK_HERE",
+                "!            §b 2sa §e250k [128x].zip",
+                "https://www.mediafire.com/file/v0vs9i7y5eiwgib/!++++++++++++%C2%A7b+2sa+%C2%A7e250k+",
                 0, false));
         out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
                 "Fosyx Sound Pack", "PvP sound pack.",
