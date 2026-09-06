@@ -152,7 +152,16 @@ public class OpenSkidMainMenu extends GuiScreen implements GuiYesNoCallback
             this.field_92024_r = this.fontRendererObj.getStringWidth(this.openGLWarning2);
             int k = Math.max(this.field_92023_s, this.field_92024_r);
             this.field_92022_t = (this.width - k) / 2;
-            this.field_92021_u = ((openskid.util.shader.impl.GuiButton)this.buttonList.get(0)).yPosition - 24;
+            int firstButtonY = j;
+            for (Object button : this.buttonList)
+            {
+                if (button instanceof openskid.util.shader.impl.GuiButton)
+                {
+                    firstButtonY = ((openskid.util.shader.impl.GuiButton) button).yPosition;
+                    break;
+                }
+            }
+            this.field_92021_u = firstButtonY - 24;
             this.field_92020_v = this.field_92022_t + k;
             this.field_92019_w = this.field_92021_u + 24;
         }
