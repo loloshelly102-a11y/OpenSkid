@@ -1,13 +1,13 @@
 package openskid.command.commands;
 
-import openskid.altmanager.AltManagerScreen;
+import me.ksyz.accountmanager.gui.GuiAccountManager;
 import openskid.command.Command;
 import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-// Opens the OpenSkid alt manager. Registered by a sibling worker.
+// Opens the account manager. Registered by a sibling worker.
 public class AltsCommand extends Command {
     public AltsCommand() {
         super(new ArrayList<String>(Arrays.asList("alts", "alt", "altmanager")));
@@ -15,6 +15,6 @@ public class AltsCommand extends Command {
 
     @Override
     public void runCommand(ArrayList<String> args) {
-        Minecraft.getMinecraft().displayGuiScreen(new AltManagerScreen(null));
+        Minecraft.getMinecraft().displayGuiScreen(new GuiAccountManager(null));
     }
 }

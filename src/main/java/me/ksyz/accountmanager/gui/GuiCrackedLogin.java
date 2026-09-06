@@ -23,6 +23,11 @@ public class GuiCrackedLogin extends GuiScreen {
 
     private String status = "&fEnter a username to log in offline (cracked).&r";
     private GuiTextField usernameField;
+    private int nameLength = 8;
+
+    private static final String NAME_FIRST = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String NAME_REST = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final java.util.Random NAME_RANDOM = new java.util.Random();
 
     public GuiCrackedLogin(GuiScreen previousScreen) {
         this.previousScreen = previousScreen;
@@ -44,6 +49,24 @@ public class GuiCrackedLogin extends GuiScreen {
         buttonList.add(new GuiButton(
                 998, sr.getScaledWidth() / 2 - 100, sr.getScaledHeight() / 2 + 30, 200, 20, "Login"
         ));
+        buttonList.add(new GuiButton(
+                997, sr.getScaledWidth() / 2 - 100, sr.getScaledHeight() / 2 + 54, 98, 20, "Random"
+        ));
+        buttonList.add(new GuiButton(
+                996, sr.getScaledWidth() / 2 + 2, sr.getScaledHeight() / 2 + 54, 48, 20, "<"
+        ));
+        buttonList.add(new GuiButton(
+                995, sr.getScaledWidth() / 2 + 54, sr.getScaledHeight() / 2 + 54, 48, 20, ">"
+        ));
+    }
+
+    private void randomizeName() {
+        StringBuilder name = new StringBuilder(nameLength);
+        name.append(NAME_FIRST.charAt(NAME_RANDOM.nextInt(NAME_FIRST.length())));
+        for (int i = 1; i < nameLength; i++) {
+            name.append(NAME_REST.charAt(NAME_RANDOM.nextInt(NAME_REST.length())));
+        }
+        usernameField.setText(name.toString());
     }
 
     @Override
@@ -66,6 +89,8 @@ public class GuiCrackedLogin extends GuiScreen {
             );
         }
         usernameField.drawTextBox();
+        drawCenteredString(fontRendererObj, String.valueOf(nameLength),
+                width / 2 + 27, height / 2 + 60, 0xFFAAAAAA);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
@@ -76,8 +101,26 @@ public class GuiCrackedLogin extends GuiScreen {
             return;
         }
 
-        if (button.id == 998) {
-            String username = usernameField.getText().trim();
+        if (button.id == 997) {
+            randomizeName();
+            return;
+        }
+
+        if (button.id == 996) {
+            if (nameLength > 3) {
+                nameLength--;
+            }
+            return;
+        }
+
+        if (button.id == 995) {
+            if (nameLength < 16) {
+                nameLength++;
+            }
+            return;
+        }
+
+        if (button.id == 998) {            String username = usernameField.getText().trim();
 
             // Standard Minecraft username rules: 3-16 chars, letters/digits/underscore.
             if (!username.matches("^\\w{3,16}$")) {

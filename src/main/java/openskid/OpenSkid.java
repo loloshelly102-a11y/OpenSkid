@@ -326,11 +326,6 @@ public class OpenSkid {
             targetManager.load();
         }
         try {
-            openskid.altmanager.AltStore.load();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
             openskid.script.ScriptManager.getInstance().loadAll();
         } catch (Exception e) {
             e.printStackTrace();

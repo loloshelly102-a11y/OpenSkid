@@ -8,6 +8,10 @@ import me.ksyz.accountmanager.utils.Notification;
 import me.ksyz.accountmanager.utils.TextFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
+import openskid.font.FontProcess;
+import openskid.ui.impl.gui.BackgroundRenderer;
+import openskid.ui.impl.gui.ModernGuiButton;
+import openskid.util.RenderUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Keyboard;
 
@@ -58,16 +62,16 @@ public class GuiAccountManager extends GuiScreen {
         final int row1 = height - 52, row2 = height - 28;
 
         // Row 1: account actions + Microsoft sign-in methods.
-        buttonList.add(loginButton = new GuiButton(0, c0, row1, bw, 20, "Login"));
-        buttonList.add(new GuiButton(1, c1, row1, bw, 20, "Add"));
-        buttonList.add(new GuiButton(5, c2, row1, bw, 20, "Add Token"));
-        buttonList.add(new GuiButton(4, c3, row1, bw, 20, "Session"));
+        buttonList.add(loginButton = new ModernGuiButton(0, c0, row1, bw, 20, "Login"));
+        buttonList.add(new ModernGuiButton(1, c1, row1, bw, 20, "Add"));
+        buttonList.add(new ModernGuiButton(5, c2, row1, bw, 20, "Add Token"));
+        buttonList.add(new ModernGuiButton(4, c3, row1, bw, 20, "Session"));
 
         // Row 2: delete + the new Cracked / Cookie sign-in methods + cancel.
-        buttonList.add(deleteButton = new GuiButton(2, c0, row2, bw, 20, "Delete"));
-        buttonList.add(new GuiButton(6, c1, row2, bw, 20, "Cracked"));
-        buttonList.add(new GuiButton(7, c2, row2, bw, 20, "Cookie"));
-        buttonList.add(cancelButton = new GuiButton(3, c3, row2, bw, 20, "Cancel"));
+        buttonList.add(deleteButton = new ModernGuiButton(2, c0, row2, bw, 20, "Delete"));
+        buttonList.add(new ModernGuiButton(6, c1, row2, bw, 20, "Cracked"));
+        buttonList.add(new ModernGuiButton(7, c2, row2, bw, 20, "Cookie"));
+        buttonList.add(cancelButton = new ModernGuiButton(3, c3, row2, bw, 20, "Cancel"));
 
         guiAccountList = new GuiAccountList(mc);
         guiAccountList.registerScrollButtons(11, 12);
@@ -96,17 +100,21 @@ public class GuiAccountManager extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float renderPartialTicks) {
+        try {
+            BackgroundRenderer.draw(width, height);
+        } catch (Exception e) {
+            drawDefaultBackground();
+        }
+        drawRect(0, 0, width, height, 0x99000000);
+
         if (guiAccountList != null) {
             guiAccountList.drawScreen(mouseX, mouseY, renderPartialTicks);
         }
         super.drawScreen(mouseX, mouseY, renderPartialTicks);
 
-        drawCenteredString(
-                fontRendererObj,
-                TextFormatting.translate(String.format(
-                        "&rAccount Manager &8(&7%s&8)&r", AccountManager.accounts.size()
-                )),
-                width / 2, 20, -1
+        FontProcess.getScaledFont("sans", 2.5f).drawCenteredString(
+                String.format("Accounts (%s)", AccountManager.accounts.size()),
+                width / 2, 12, -1
         );
 
         String text = TextFormatting.translate(String.format(
@@ -116,14 +124,16 @@ public class GuiAccountManager extends GuiScreen {
 
         if (notification != null && !notification.isExpired()) {
             String notificationText = notification.getMessage();
-            Gui.drawRect(
-                    mc.currentScreen.width / 2 - mc.fontRendererObj.getStringWidth(notificationText) / 2 - 3, 4,
-                    mc.currentScreen.width / 2 + mc.fontRendererObj.getStringWidth(notificationText) / 2 + 3, 4 + 3 + mc.fontRendererObj.FONT_HEIGHT + 2,
-                    0x64000000
-            );
+            int textWidth = mc.fontRendererObj.getStringWidth(notificationText);
+            int nx0 = mc.currentScreen.width / 2 - textWidth / 2 - 8;
+            int nx1 = mc.currentScreen.width / 2 + textWidth / 2 + 8;
+            RenderUtil.drawRoundedRect((float) nx0, 4.0f, (float) (nx1 - nx0), 16.0f, 4.0f,
+                    0xFF141416, true, true, true, true);
+            RenderUtil.drawRoundedRectOutline((float) nx0, 4.0f, (float) (nx1 - nx0), 16.0f, 4.0f, 1.0f,
+                    0xFF55FFFF, true, true, true, true);
             mc.currentScreen.drawCenteredString(
                     mc.fontRendererObj, notification.getMessage(),
-                    mc.currentScreen.width / 2, 4 + 3, -1
+                    mc.currentScreen.width / 2, 8, -1
             );
         }
     }
@@ -365,7 +375,6 @@ public class GuiAccountManager extends GuiScreen {
 
         @Override
         protected void drawBackground() {
-            GuiAccountManager.this.drawDefaultBackground();
         }
 
         @Override
