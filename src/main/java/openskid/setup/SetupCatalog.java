@@ -56,11 +56,10 @@ public final class SetupCatalog {
                 "!    \u00A74Urge Revamp.zip",
                 "https://www.mediafire.com/file/l0lm240xobgx18e/!++++%C2%A74Urge+Revamp.zip/file",
                 0, false));
-        // TODO: Wood and Meow share the same file id in the list. Needs the real Wood link.
         out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
                 "Wood Sound Overlay", "Hit sound overlay.",
-                "\u00A74Wood \u00A7fSound \u00A74Overlay.zip",
-                "PASTE_REAL_WOOD_SHARE_LINK_HERE",
+                "§4Wood §fSound §4Overlay.zip",
+                "https://www.mediafire.com/file/i9u7i4rkll8xnac/%C2%A74Wood+%C2%A7fSound+%C2%A74Overlay.zip/file",
                 0, false));
         out.add(new SetupEntry(SetupEntry.Section.PACKS, SetupEntry.Source.MEDIAFIRE_SHARE,
                 "Axe Sound Overlay", "Hit sound overlay.",
