@@ -13,10 +13,13 @@ public final class SetupScanner {
 
     public static File gameDir() {
         try {
-            return net.minecraft.client.Minecraft.getMinecraft().mcDataDir;
-        } catch (Exception e) {
-            return new File(".");
+            File dir = net.minecraft.client.Minecraft.getMinecraft().mcDataDir;
+            if (dir != null) {
+                return dir;
+            }
+        } catch (Exception ignored) {
         }
+        return new File(".");
     }
 
     public static File modsDir() {

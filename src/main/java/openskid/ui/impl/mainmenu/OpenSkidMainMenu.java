@@ -101,6 +101,18 @@ public class OpenSkidMainMenu extends GuiScreen implements GuiYesNoCallback
         this.buttonList.add(new ModernGuiButton(16, this.width / 2 - 100, this.height / 4 + 48 + 72 + 60, 200, 20, "First-time setup"));
     }
 
+    private int firstShaderButtonY()
+    {
+        for (Object button : this.buttonList)
+        {
+            if (button instanceof openskid.util.shader.impl.GuiButton)
+            {
+                return ((openskid.util.shader.impl.GuiButton) button).yPosition;
+            }
+        }
+        return this.height / 4 + 48;
+    }
+
     public void updateScreen()
     {
         ++this.panoramaTimer;
@@ -152,15 +164,7 @@ public class OpenSkidMainMenu extends GuiScreen implements GuiYesNoCallback
             this.field_92024_r = this.fontRendererObj.getStringWidth(this.openGLWarning2);
             int k = Math.max(this.field_92023_s, this.field_92024_r);
             this.field_92022_t = (this.width - k) / 2;
-            int firstButtonY = j;
-            for (Object button : this.buttonList)
-            {
-                if (button instanceof openskid.util.shader.impl.GuiButton)
-                {
-                    firstButtonY = ((openskid.util.shader.impl.GuiButton) button).yPosition;
-                    break;
-                }
-            }
+            int firstButtonY = firstShaderButtonY();
             this.field_92021_u = firstButtonY - 24;
             this.field_92020_v = this.field_92022_t + k;
             this.field_92019_w = this.field_92021_u + 24;
@@ -451,7 +455,7 @@ public class OpenSkidMainMenu extends GuiScreen implements GuiYesNoCallback
         {
             drawRect(this.field_92022_t - 2, this.field_92021_u - 2, this.field_92020_v + 2, this.field_92019_w - 1, 1428160512);
             this.drawString(this.fontRendererObj, this.openGLWarning1, this.field_92022_t, this.field_92021_u, -1);
-            this.drawString(this.fontRendererObj, this.openGLWarning2, (this.width - this.field_92024_r) / 2, ((openskid.util.shader.impl.GuiButton)this.buttonList.get(0)).yPosition - 12, -1);
+            this.drawString(this.fontRendererObj, this.openGLWarning2, (this.width - this.field_92024_r) / 2, firstShaderButtonY() - 12, -1);
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);

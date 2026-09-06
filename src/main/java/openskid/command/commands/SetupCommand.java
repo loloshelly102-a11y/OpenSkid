@@ -16,9 +16,9 @@ public class SetupCommand extends Command {
 
     @Override
     public void runCommand(ArrayList<String> args) {
-        SetupState.reset();
         try {
             Minecraft.getMinecraft().displayGuiScreen(new SetupScreen());
+            SetupState.reset();
         } catch (Exception e) {
             ChatUtil.sendFormatted("Could not open setup wizard.");
         }

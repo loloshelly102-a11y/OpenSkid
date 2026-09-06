@@ -138,7 +138,11 @@ public class SetupScreen extends GuiScreen {
             }
         } else if (button.id == 3) {
             rescan();
+            progress.clear();
+            totals.clear();
             footer = "Rescanned. Drop files in yourself and hit Rescan anytime.";
+            checkFinished();
+            refreshButtons();
         } else if (button.id == 4) {
             SetupState.markDone();
             mc.displayGuiScreen(null);
@@ -148,11 +152,6 @@ public class SetupScreen extends GuiScreen {
         } else if (button.id == 6) {
             SetupState.markDone();
             mc.displayGuiScreen(null);
-        } else if (button.id >= 100) {
-            int index = button.id - 100;
-            if (index >= 0 && index < rows.size()) {
-                toggle(rows.get(index));
-            }
         }
     }
 
@@ -305,6 +304,10 @@ public class SetupScreen extends GuiScreen {
 
     private void activatePack(String fileName) {
         try {
+            File file = new File(SetupScanner.packsDir(), fileName);
+            if (!file.isFile() || file.length() < 4096) {
+                return;
+            }
             List<String> packs = mc.gameSettings.resourcePacks;
             String key = "file/" + fileName;
             if (!packs.contains(key)) {
@@ -324,6 +327,10 @@ public class SetupScreen extends GuiScreen {
             scroll += wheel > 0 ? ROW_H : -ROW_H;
             if (scroll < 0) {
                 scroll = 0;
+            }
+            int maxScroll = Math.max(0, rows.size() * ROW_H + 40 - (height - 140));
+            if (scroll > maxScroll) {
+                scroll = maxScroll;
             }
         }
     }

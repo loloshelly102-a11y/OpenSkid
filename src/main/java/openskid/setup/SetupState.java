@@ -7,7 +7,11 @@ public final class SetupState {
     }
 
     public static File markerFile() {
-        return new File("./config/OpenSkid/setup_done");
+        try {
+            return new File(SetupScanner.gameDir(), "config/OpenSkid/setup_done");
+        } catch (Exception e) {
+            return new File("./config/OpenSkid/setup_done");
+        }
     }
 
     public static boolean isDone() {

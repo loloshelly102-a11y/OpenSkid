@@ -66,6 +66,12 @@ public final class SetupDownloader {
         connection.setRequestProperty("User-Agent", "OpenSkid");
         connection.setUseCaches(false);
         connection.connect();
+        if (connection instanceof java.net.HttpURLConnection) {
+            int code = ((java.net.HttpURLConnection) connection).getResponseCode();
+            if (code < 200 || code >= 300) {
+                throw new Exception("server said " + code);
+            }
+        }
         long total = connection.getContentLengthLong();
         if (entry.expectedBytes > 0) {
             total = entry.expectedBytes;
@@ -97,6 +103,10 @@ public final class SetupDownloader {
         if (entry.expectedBytes > 0 && temp.length() != entry.expectedBytes) {
             temp.delete();
             throw new Exception("size mismatch, try again");
+        }
+        if (entry.expectedBytes == 0 && temp.length() < 4096) {
+            temp.delete();
+            throw new Exception("file too small, try again");
         }
         if (dest.exists()) {
             dest.delete();
@@ -132,14 +142,14 @@ public final class SetupDownloader {
         connection.setUseCaches(false);
         connection.connect();
         InputStream in = connection.getInputStream();
+        java.io.ByteArrayOutputStream raw = new java.io.ByteArrayOutputStream();
         try {
             byte[] buffer = new byte[8192];
-            StringBuilder text = new StringBuilder();
             int read;
-            while ((read = in.read(buffer)) != -1 && text.length() < 1024 * 1024) {
-                text.append(new String(buffer, 0, read, "UTF-8"));
+            while ((read = in.read(buffer)) != -1 && raw.size() < 1024 * 1024) {
+                raw.write(buffer, 0, read);
             }
-            return text.toString();
+            return raw.toString("UTF-8");
         } finally {
             try {
                 in.close();
